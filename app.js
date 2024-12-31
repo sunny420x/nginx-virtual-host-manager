@@ -218,7 +218,26 @@ app.get('/view/:file_name', (req,res) => {
                     console.error('Error reading file:', err);
                     return;
                 }
-                res.send(`<pre>${data}</pre>`)
+                res.render('view',{
+                    content: data,
+                    name: req.params.file_name
+                })
+            });
+        }
+    })
+})
+
+app.post('/update_file', (req,res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            file_name = req.body.file_name
+            content = req.body.content
+            fs.writeFile(path+file_name, content, (err) => {
+                if (err) {
+                    console.error('Error appending to file:', err);
+                } else {
+                    res.redirect('/view/'+file_name)
+                }
             });
         }
     })
