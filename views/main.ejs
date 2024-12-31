@@ -1,0 +1,175 @@
+<head>
+    <title>Control Panel | Nginx Virtual Host Management System</title>
+    <%-include('include/head')%>
+</head>
+<body class="bg-light">
+    <div class="mx-3 mt-4">
+        <%if(locals.alert) {%>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%=alert%>
+                <script>
+                    function removeAlert() {
+                        window.history.replaceState(null, '', window.location.pathname);
+                    }
+                </script>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeAlert()"></button>
+            </div>
+        <%}%>
+    </div>
+    <div class="container my-4 card p-4">
+        <h2 class="mb-3"><i class="fa-solid fa-gears me-2"></i> Control Panel</h2>
+
+        <div class="bg-light mb-3 p-3">
+            <h4 class="mb-3"><i class="fa-solid fa-server me-2"></i> Server Details</h4>
+            <p>
+                <div id="cpuStat"></div>
+                <div id="memStat"></div>
+                <div id="uptime"></div>
+            </p>
+        </div>
+        <script>
+            uptime = document.getElementById('uptime')
+            memStat = document.getElementById('memStat')
+            cpuStat = document.getElementById('cpuStat')
+
+            fetch('/getUptime').then((res) => {
+                if(res.ok) {
+                    return res.text()
+                }
+            }).then((data) => {
+                uptime.innerHTML = data
+            })
+            fetch('/getMemoryStat').then((res) => {
+                if(res.ok) {
+                    return res.text()
+                }
+            }).then((data) => {
+                memStat.innerHTML = data
+            })
+            fetch('/getCPUusage').then((res) => {
+                if(res.ok) {
+                    return res.text()
+                }
+            }).then((data) => {
+                cpuStat.innerHTML = data
+            })
+        </script>
+        <div class="row">
+            <div class="col">
+                <button class="btn btn-primary w-100" onclick="
+                fetch('/restart').then((res) => {
+                    if(res.ok) {
+                        return res.text()
+                    }
+                }).then((data) => {
+                    alert('Nginx is restarting...')
+                    window.location.href = '/?alert=Restart Success.';
+                })"><i class="fa-solid fa-arrows-rotate"></i></button>
+            </div>
+            <div class="col">
+                <button class="btn btn-danger w-100" onclick="window.location.href='/stop'"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row grid-2 gap-4">
+            <div class="mb-4 card p-4 col-lg">
+                <h3><i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host.</h3>
+                <hr>
+                <form action="/createNodeJSVirtualHost" method="post">
+                    <h4 class="my-4"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
+                    <div class="mb-3">
+                      <label for="" class="form-label">App name: </label>
+                      <input type="text" class="form-control" id="" name="app_name" placeholder="abc" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="" class="form-label">Server Name (Domain Name):</label>
+                      <input type="text" class="form-control" id="" name="server_name" placeholder="abc.sunny420x.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="" class="form-label">Node.js Path:</label>
+                        <input type="text" class="form-control" id="" name="app_path" placeholder="/Node/abc/" required>
+                      </div>
+                    <div class="mb-3">
+                        <label for="" class="form-label">Port:</label>
+                        <input type="number" class="form-control" id="" name="port" placeholder="4000-6000" required>
+                    </div>
+                    <h4 class="my-4"><i class="fa-solid fa-hard-drive me-2"></i> Resources:</h4>
+                    <div class="mb-3">
+                        <label for="" class="form-label">Resource Folders (separate with ,):</label>
+                        <input type="text" class="form-control" id="" name="folders" placeholder="css,js,images,videos">
+                    </div>
+                    <h4 class="my-4"><i class="fa-solid fa-key me-2"></i> SSL Settings:</h4>
+                    <div class="mb-3 form-check">
+                      <input type="checkbox" class="form-check-input" id="" value="true" name="ssl_enabled">
+                      <label class="form-check-label" for="">SSL</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="" class="form-label">SSL File Name:</label>
+                        <input type="text" class="form-control" id="" name="ssl_file_name" placeholder="for abc.sunny420x use sunny420x">
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i> Create Virtual Host</button>
+                  </form>
+            </div>
+            <div class="mb-4 card p-4 col-lg">
+                <h3><i class="fa-solid fa-plus me-2"></i> Create PHP Virtual Host.</h3>
+                <hr>
+                <form action="/createPHPVirtualHost" method="post">
+                    <h4 class="my-4"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
+                    <div class="mb-3">
+                      <label for="" class="form-label">App name: </label>
+                      <input type="text" class="form-control" id="" name="app_name" placeholder="abc" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="" class="form-label">Server Name (Domain Name):</label>
+                      <input type="text" class="form-control" id="" name="server_name" placeholder="abc.sunny420x.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="" class="form-label">Root Directory:</label>
+                        <input type="text" class="form-control" id="" name="root_dir" placeholder="/var/www/html/abc" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="" class="form-label">PHP version:</label>
+                        <input type="text" class="form-control" id="" name="php_version" placeholder="8.1" required>
+                    </div>
+                    <h4 class="my-4"><i class="fa-solid fa-key me-2"></i> SSL Settings:</h4>
+                    <div class="mb-3 form-check">
+                      <input type="checkbox" class="form-check-input" id="" value="true" name="ssl_enabled">
+                      <label class="form-check-label" for="">SSL</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="" class="form-label">SSL File Name:</label>
+                        <input type="text" class="form-control" id="" name="ssl_file_name" placeholder="for abc.sunny420x use sunny420x">
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i> Create Virtual Host</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="container mb-4 card p-4">
+        <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Virtual Host Lists</h3>
+        <table class="table">
+            <tr>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+            <%files.forEach((file) => {%>
+                <tr>
+                    <td><%=file%></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="
+                        window.location.href = '/view/<%=file%>'
+                        "><i class="fa-solid fa-eye"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="
+                        if (confirm('Do you want to delete this virtual host?')) {
+                            window.location.href = '/delete/<%=file%>'
+                        }
+                        "><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            <%
+            })%>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
