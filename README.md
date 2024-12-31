@@ -12,7 +12,7 @@ NGINX_PATH=/etc/nginx/sites-enabled/
 </pre>
 <ul>
     <li>PORT is a port you want this app to be running on.</li>
-    <li>USERNAME is a username that is use to login to control panel.</li>
-    <li>PASSWORD is a password that is use to login to control panel.</li>
+    <li>USERNAME is a username use to login to control panel.</li>
+    <li>PASSWORD is a password use to login to control panel.</li>
     <li>NGINX_PATH is a path of 'sites-enabled' or 'sites-available'.</li>
 </ul>
