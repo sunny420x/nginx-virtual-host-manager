@@ -3,10 +3,13 @@
     <%-include('include/head')%>
 </head>
 <body>
+    <div class="bg-light mb-3">
+        <i class="fa-solid fa-chevron-left p-4" onclick="window.location.href='/'" style="cursor: pointer;"></i> <%=name%>
+    </div>
     <div class="container">
         <form action="/update_file" method="post">
             <input type="hidden" name="file_name" value="<%=name%>">
-            <textarea name="content" id="" style="width: 100%;" rows="25" class="mt-4"><%=content%></textarea>
+            <textarea name="content" id="" style="width: 100%;" rows="20" class="mt-4"><%=content%></textarea>
             <button class="btn-primary btn mt-4 w-100"><i class="fa-solid fa-floppy-disk me-2"></i> Save</button>
         </form>
     </div>

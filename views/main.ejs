@@ -17,7 +17,7 @@
         <%}%>
     </div>
     <div class="container my-4 card p-4">
-        <h2 class="mb-3"><i class="fa-solid fa-gears me-2"></i> Control Panel</h2>
+        <h2 class="mb-3"><i class="fa-solid fa-gears me-2"></i>Nginx Web Server Control Panel</h2>
 
         <div class="bg-light mb-3 p-3">
             <h4 class="mb-3"><i class="fa-solid fa-server me-2"></i> Server Details</h4>
@@ -32,29 +32,35 @@
             memStat = document.getElementById('memStat')
             cpuStat = document.getElementById('cpuStat')
 
-            fetch('/getUptime').then((res) => {
+            function getSystemStat() {
+                fetch('/getUptime').then((res) => {
                 if(res.ok) {
                     return res.text()
                 }
-            }).then((data) => {
-                uptime.innerHTML = data
-            })
-            fetch('/getMemoryStat').then((res) => {
-                if(res.ok) {
-                    return res.text()
-                }
-            }).then((data) => {
-                memStat.innerHTML = data
-            })
-            fetch('/getCPUusage').then((res) => {
-                if(res.ok) {
-                    return res.text()
-                }
-            }).then((data) => {
-                cpuStat.innerHTML = data
-            })
+                }).then((data) => {
+                    uptime.innerHTML = data
+                })
+                fetch('/getMemoryStat').then((res) => {
+                    if(res.ok) {
+                        return res.text()
+                    }
+                }).then((data) => {
+                    memStat.innerHTML = data
+                })
+                fetch('/getCPUusage').then((res) => {
+                    if(res.ok) {
+                        return res.text()
+                    }
+                }).then((data) => {
+                    cpuStat.innerHTML = data
+                })
+            }
+
+            getSystemStat()
+
+            setInterval(getSystemStat, 10000)
         </script>
-        <div class="row">
+        <div class="row mb-3">
             <div class="col">
                 <button class="btn btn-primary w-100" onclick="
                 fetch('/restart').then((res) => {
@@ -64,20 +70,33 @@
                 }).then((data) => {
                     alert('Nginx is restarting...')
                     window.location.href = '/?alert=Restart Success.';
-                })"><i class="fa-solid fa-arrows-rotate"></i></button>
+                })"><i class="fa-solid fa-arrows-rotate"></i> Restart Web Server</button>
             </div>
             <div class="col">
-                <button class="btn btn-danger w-100" onclick="window.location.href='/stop'"><i class="fa-solid fa-power-off"></i></button>
+                <button class="btn btn-danger w-100" onclick="window.location.href='/stop'"><i class="fa-solid fa-power-off"></i> Stop Web Server</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#nodejsvhost">
+                    <i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#phpvhost">
+                    <i class="fa-solid fa-plus me-2"></i> Create PHP Virtual Host
+                </button>
             </div>
         </div>
     </div>
-    <div class="container">
-        <div class="row grid-2 gap-4">
-            <div class="mb-4 card p-4 col-lg">
-                <h3><i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host.</h3>
-                <hr>
+    <div class="modal fade" id="nodejsvhost" tabindex="-1" aria-labelledby="nodejsvhost" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel"><i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host.</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
                 <form action="/createNodeJSVirtualHost" method="post">
-                    <h4 class="my-4"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
+                    <h4 class="mb-3"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
                     <div class="mb-3">
                       <label for="" class="form-label">App name: </label>
                       <input type="text" class="form-control" id="" name="app_name" placeholder="abc" required>
@@ -109,13 +128,21 @@
                         <input type="text" class="form-control" id="" name="ssl_file_name" placeholder="for abc.sunny420x use sunny420x">
                     </div>
                     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i> Create Virtual Host</button>
-                  </form>
+                </form>
             </div>
-            <div class="mb-4 card p-4 col-lg">
-                <h3><i class="fa-solid fa-plus me-2"></i> Create PHP Virtual Host.</h3>
-                <hr>
+        </div>
+        </div>
+    </div>
+    <div class="modal fade" id="phpvhost" tabindex="-1" aria-labelledby="nodejsvhost" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel"><i class="fa-solid fa-plus me-2"></i> Create PHP Virtual Host.</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
                 <form action="/createPHPVirtualHost" method="post">
-                    <h4 class="my-4"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
+                    <h4 class="mb-3"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
                     <div class="mb-3">
                       <label for="" class="form-label">App name: </label>
                       <input type="text" class="form-control" id="" name="app_name" placeholder="abc" required>
@@ -145,6 +172,7 @@
                 </form>
             </div>
         </div>
+        </div>
     </div>
     <div class="container mb-4 card p-4">
         <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Virtual Host Lists (<%=files.length%> totals)</h3>
@@ -159,7 +187,7 @@
                     <td>
                         <button class="btn btn-primary btn-sm" onclick="
                         window.location.href = '/view/<%=file%>'
-                        "><i class="fa-solid fa-eye"></i></button>
+                        "><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-danger btn-sm" onclick="
                         if (confirm('Do you want to delete this virtual host?')) {
                             window.location.href = '/delete/<%=file%>'
