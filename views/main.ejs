@@ -21,11 +21,12 @@
 
         <div class="bg-light mb-3 p-3">
             <h4 class="mb-3"><i class="fa-solid fa-server me-2"></i> Server Details</h4>
-            <p>
-                <div id="cpuStat"></div>
-                <div id="memStat"></div>
-                <div id="uptime"></div>
-            </p>
+            <ul class="list-group">
+                <li class="list-group-item"><i class="fa-solid fa-microchip"></i> <span id="cpuStat"></span></li>
+                <li class="list-group-item"><i class="fa-solid fa-memory"></i> <span id="memStat"></span></li>
+                <li class="list-group-item"><i class="fa-regular fa-clock"></i> <span id="uptime"></span></li>
+                <li class="list-group-item"><i class="fa-solid fa-coins"></i> <span id="ElectricCost"></span></li>
+            </ul>
         </div>
         <script>
             uptime = document.getElementById('uptime')
@@ -53,6 +54,13 @@
                     }
                 }).then((data) => {
                     cpuStat.innerHTML = data
+                })
+                fetch('/getElectricCost').then((res) => {
+                    if(res.ok) {
+                        return res.text()
+                    }
+                }).then((data) => {
+                    ElectricCost.innerHTML = data
                 })
             }
 
@@ -193,6 +201,32 @@
                             window.location.href = '/delete/<%=file%>'
                         }
                         "><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            <%
+            })%>
+        </table>
+    </div>
+    <div class="container mb-4 card p-4">
+        <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals)</h3>
+        <table class="table">
+            <tr>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+            <%nodeapps.forEach((name) => {%>
+                <tr>
+                    <td><%=name%></td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="
+                        window.location.href = '/start/node/<%=name%>'
+                        "><i class="fa-solid fa-play"></i></button>
+                        <button class="btn btn-primary btn-sm" onclick="
+                        window.location.href = '/restart/node/<%=name%>'
+                        "><i class="fa-solid fa-arrows-rotate"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="
+                        window.location.href = '/stop/node/<%=name%>'
+                        "><i class="fa-solid fa-stop"></i></button>
                     </td>
                 </tr>
             <%

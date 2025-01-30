@@ -47,16 +47,23 @@ app.get('/', (req, res) => {
         if(result) {
             fs.readdir(path, (err, files) => {
                 if(err) throw err;
-                if(req.query.alert != undefined) {
-                    res.render('main', {
-                        alert: req.query.alert,
-                        files:files
-                    })   
-                } else {
-                    res.render('main', {
-                        files:files
-                    })   
-                }
+                exec(`pm2 list | awk 'NR>2 {print $4}'`, (err, nodeapps, stderr) => {
+                    if (err) console.error(err);
+                    if (stderr) console.error(stderr);
+                    nodeapps = nodeapps.trim().split('\n')
+                    if(req.query.alert != undefined) {
+                        res.render('main', {
+                            alert: req.query.alert,
+                            files:files,
+                            nodeapps:nodeapps
+                        })   
+                    } else {
+                        res.render('main', {
+                            files:files,
+                            nodeapps:nodeapps
+                        })   
+                    }
+                });
             });
         } else {
             res.redirect("/login")
@@ -298,6 +305,57 @@ app.get('/getCPUusage', (req,res) => {
                 if (err) console.error(err);
                 if (stderr) console.error(stderr);
                 res.send(`<b>CPU Usage:</b> ${stdout}`)
+            });
+        }
+    })
+})
+
+app.get('/getElectricCost', (req,res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            exec(`cat /tmp/powerstat_output.txt`, (err, stdout, stderr) => {
+                if (err) console.error(err);
+                if (stderr) console.error(stderr);
+                res.send(`<b>Electric Cost:</b> ${86400 * parseFloat(stdout.trim()) / 30 * 3 / 3600} baht / month`)
+            });
+        }
+    })
+})
+
+app.get('/restart/node/:name', (req,res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            const name = req.params.name
+            exec(`pm2 restart ${name}`, (err, stderr) => {
+                if (err) console.error(err);
+                if (stderr) console.error(stderr);
+                res.redirect(`/?alert=Restart ${name} success !`)
+            });
+        }
+    })
+})
+
+app.get('/start/node/:name', (req,res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            const name = req.params.name
+            exec(`pm2 start ${name}`, (err, stderr) => {
+                if (err) console.error(err);
+                if (stderr) console.error(stderr);
+                res.redirect(`/?alert=Start ${name} success !`)
+            });
+        }
+    })
+})
+
+app.get('/stop/node/:name', (req,res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            const name = req.params.name
+            exec(`pm2 stop ${name}`, (err, stderr) => {
+                if (err) console.error(err);
+                if (stderr) console.error(stderr);
+                res.redirect(`/?alert=Stop ${name} success !`)
             });
         }
     })
