@@ -182,56 +182,60 @@
         </div>
         </div>
     </div>
-    <div class="container mb-4 card p-4">
-        <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Virtual Host Lists (<%=files.length%> totals)</h3>
-        <table class="table">
-            <tr>
-                <th>Name</th>
-                <th>Action</th>
-            </tr>
-            <%files.forEach((file) => {%>
-                <tr>
-                    <td><%=file%></td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="
-                        window.location.href = '/view/<%=file%>'
-                        "><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="
-                        if (confirm('Do you want to delete this virtual host?')) {
-                            window.location.href = '/delete/<%=file%>'
-                        }
-                        "><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            <%
-            })%>
-        </table>
-    </div>
-    <div class="container mb-4 card p-4">
-        <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals)</h3>
-        <table class="table">
-            <tr>
-                <th>Name</th>
-                <th>Action</th>
-            </tr>
-            <%nodeapps.forEach((name) => {%>
-                <tr>
-                    <td><%=name%></td>
-                    <td>
-                        <button class="btn btn-success btn-sm" onclick="
-                        window.location.href = '/start/node/<%=name%>'
-                        "><i class="fa-solid fa-play"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="
-                        window.location.href = '/restart/node/<%=name%>'
-                        "><i class="fa-solid fa-arrows-rotate"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="
-                        window.location.href = '/stop/node/<%=name%>'
-                        "><i class="fa-solid fa-stop"></i></button>
-                    </td>
-                </tr>
-            <%
-            })%>
-        </table>
+    <div class="container">
+        <div class="row grid-2 gap-3">
+            <div class="col-lg mb-4 card p-4">
+                <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Virtual Host Lists (<%=files.length%> totals)</h3>
+                <table class="table">
+                    <tr>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                    <%files.forEach((file) => {%>
+                        <tr>
+                            <td><%=file%></td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" onclick="
+                                window.location.href = '/view/<%=file%>'
+                                "><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="
+                                if (confirm('Do you want to delete this virtual host?')) {
+                                    window.location.href = '/delete/<%=file%>'
+                                }
+                                "><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    <%
+                    })%>
+                </table>
+            </div>
+            <div class="col-lg mb-4 card p-4">
+                <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals)</h3>
+                <table class="table">
+                    <tr>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                    <%nodeapps.forEach((name) => {%>
+                        <tr>
+                            <td><%=name%></td>
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="
+                                window.location.href = '/start/node/<%=name%>'
+                                "><i class="fa-solid fa-play"></i></button>
+                                <button class="btn btn-primary btn-sm" onclick="
+                                window.location.href = '/restart/node/<%=name%>'
+                                "><i class="fa-solid fa-arrows-rotate"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="
+                                window.location.href = '/stop/node/<%=name%>'
+                                "><i class="fa-solid fa-stop"></i></button>
+                            </td>
+                        </tr>
+                    <%
+                    })%>
+                </table>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
