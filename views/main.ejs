@@ -81,7 +81,7 @@
                 })"><i class="fa-solid fa-arrows-rotate"></i> Restart Web Server</button>
             </div>
             <div class="col">
-                <button class="btn btn-danger w-100" onclick="window.location.href='/stop'"><i class="fa-solid fa-power-off"></i> Stop Web Server</button>
+                <button class="btn btn-danger w-100" onclick="if(confirm('Do you want to stop web server ?')) {window.location.href='/stop'}"><i class="fa-solid fa-power-off"></i> Stop Web Server</button>
             </div>
         </div>
         <div class="row">
