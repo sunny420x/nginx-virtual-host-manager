@@ -146,7 +146,7 @@ function createPHPVirtualHost(app_name, server_name, ssl_file_name, ssl_enabled,
             template += `\n\tssl_certificate /Storage/SSL_KEY/${ssl_file_name}-public-key.pem;\n\tssl_certificate_key /Storage/SSL_KEY/${ssl_file_name}-private-key.pem;`
         }
     
-        template += `\n\taccess_log /var/log/nginx/${app_name}-access.log;\n\terror_log /var/log/nginx/${app_name}-error.log;]\n`
+        template += `\n\taccess_log /var/log/nginx/${app_name}-access.log;\n\terror_log /var/log/nginx/${app_name}-error.log;\n`
 
         template += `\n\tlocation / {\n\t\ttry_files $uri $uri/ =404;\n\t}\n`
 
