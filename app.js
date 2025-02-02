@@ -316,7 +316,7 @@ app.get('/getElectricCost', (req,res) => {
             exec(`cat /tmp/powerstat_output.txt`, (err, stdout, stderr) => {
                 if (err) console.error(err);
                 if (stderr) console.error(stderr);
-                res.send(`<b>Electric Cost:</b> ${86400 * parseFloat(stdout.trim()) / 30 * 3 / 3600} baht / month`)
+                res.send(`<b>Electric Cost:</b> ${(86400 * parseFloat(stdout.trim()) / 30 * 3 / 3600).toFixed(2)} baht / month`)
             });
         }
     })
