@@ -10,8 +10,8 @@
     <script>hljs.highlightAll();</script>
 </head>
 <body class="bg-dark">
-    <div class="bg-dark text-white mb-3">
-        <i class="fa-solid fa-chevron-left p-4" onclick="window.location.href='/'" style="cursor: pointer;"></i> <%=name%>
+    <div class="bg-dark text-white mb-3" onclick="window.location.href='/'" style="cursor: pointer;">
+        <i class="fa-solid fa-chevron-left p-4"></i> <%=name%>
     </div>
     <div class="container">
         <form action="/update_file" method="post" onsubmit="updateContent()">
@@ -36,4 +36,5 @@
             };
         </script>
     </div>
+    <%-include('include/footer')%>
 </body>
