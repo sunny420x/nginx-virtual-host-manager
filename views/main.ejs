@@ -9,7 +9,7 @@
     </style>
     <%-include('include/head')%>
 </head>
-<body class="bg-light">
+<body class="bg-dark">
     <div class="mx-3 mt-4">
         <%if(locals.alert) {%>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -26,9 +26,9 @@
     <div class="container my-4 card p-4">
         <h2 class="mb-3"><i class="fa-solid fa-gears me-2"></i>Nginx Web Server Control Panel</h2>
 
-        <div class="bg-light mb-3 p-3">
+        <div class="black-bg mb-3 p-3">
             <h4 class="mb-3"><i class="fa-solid fa-server me-2"></i> Server Details</h4>
-            <ul class="list-group">
+            <ul class="bg-dark p-4 mb-0">
                 <li class="list-group-item"><i class="fa-solid fa-microchip"></i> <span id="cpuStat"></span></li>
                 <li class="list-group-item"><i class="fa-solid fa-memory"></i> <span id="memStat"></span></li>
                 <li class="list-group-item"><i class="fa-regular fa-clock"></i> <span id="uptime"></span></li>
@@ -93,10 +93,10 @@
         </div>
         <div class="row">
             <div class="col">
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#nodejsvhost">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#nodejsvhost">
                     <i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host
                 </button>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#phpvhost">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#phpvhost">
                     <i class="fa-solid fa-plus me-2"></i> Create PHP Virtual Host
                 </button>
             </div>
@@ -104,7 +104,7 @@
     </div>
     <div class="modal fade" id="nodejsvhost" tabindex="-1" aria-labelledby="nodejsvhost" aria-hidden="true">
         <div class="modal-dialog modal-xl">
-        <div class="modal-content">
+        <div class="modal-content bg-dark text-white">
             <div class="modal-header">
             <h1 class="modal-title fs-5" id="exampleModalLabel"><i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host.</h1>
             <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -191,9 +191,10 @@
     </div>
     <div class="container">
         <div class="row grid-2 gap-3">
+            <%if(locals.files) {%>
             <div class="col-lg mb-4 card p-4">
                 <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Virtual Host Lists (<%=files.length%> totals)</h3>
-                <table class="table">
+                <table class="table table-dark">
                     <tr>
                         <th>Name</th>
                         <th>Action</th>
@@ -216,9 +217,15 @@
                     })%>
                 </table>
             </div>
+            <%} else {%>
+                <div class="col-lg mb-4 card p-4">
+                    <h2>Virtual Host not found...</h2>
+                </div>
+            <%}%>
+            <%if(locals.nodeapps) {%>
             <div class="col-lg mb-4 card p-4">
                 <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals)</h3>
-                <table class="table">
+                <table class="table table-dark">
                     <tr>
                         <th>Name</th>
                         <th>Action</th>
@@ -242,6 +249,11 @@
                     })%>
                 </table>
             </div>
+            <%} else {%>
+                <div class="col-lg mb-4 card p-4">
+                    <h2>Node app not found...</h2>
+                </div>
+            <%}%>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

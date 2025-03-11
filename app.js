@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
     checkAdmin(req).then((result) => {
         if(result) {
             fs.readdir(path, (err, files) => {
-                if(err) throw err;
+                if(err) console.log(err);
                 exec(`pm2 list | awk 'NR>2 {print $4}'`, (err, nodeapps, stderr) => {
                     if (err) console.error(err);
                     if (stderr) console.error(stderr);
@@ -289,7 +289,7 @@ app.get('/getMemoryStat', (req,res) => {
 app.get('/getUptime', (req,res) => {
     checkAdmin(req).then((result) => {
         if(result) {
-            exec(`uptime | awk -F'( |,|:)+' '{print $6,$7",",$8,"hours,",$9,"minutes"}'`, (err, stdout, stderr) => {
+            exec(`uptime | awk -F'up |,|:' '{print $2}' | awk '{print $1,"days,", $2,"hours,", $3,"minutes"}`, (err, stdout, stderr) => {
                 if (err) console.error(err);
                 if (stderr) console.error(stderr);
                 res.send(`<b>Uptime</b>: ${stdout}`)
