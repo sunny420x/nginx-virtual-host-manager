@@ -1,16 +1,39 @@
 <head>
     <title>Control Panel | Nginx Virtual Host Management System</title>
     <%-include('include/head')%>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css" integrity="sha512-Jk4AqjWsdSzSWCSuQTfYRIF84Rq/eV0G2+tu07byYwHcbTGfdmLrHjUSwvzp5HvbiqK4ibmNwdcG49Y5RGYPTg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script>hljs.highlightAll();</script>
 </head>
-<body>
-    <div class="bg-dark mb-3">
+<body class="bg-dark">
+    <div class="bg-dark text-white mb-3">
         <i class="fa-solid fa-chevron-left p-4" onclick="window.location.href='/'" style="cursor: pointer;"></i> <%=name%>
     </div>
     <div class="container">
-        <form action="/update_file" method="post">
+        <form action="/update_file" method="post" onsubmit="updateContent()">
             <input type="hidden" name="file_name" value="<%=name%>">
-            <textarea name="content" id="" style="width: 100%;" rows="20" class="mt-4"><%=content%></textarea>
+            <pre><code id="editable-code" class="language-nginx" contenteditable="true" name="content"><%=content%></code></pre>
+            <textarea id="hidden-content" name="content" style="display: none;"></textarea>
             <button class="btn-primary btn mt-4 w-100"><i class="fa-solid fa-floppy-disk me-2"></i> Save</button>
         </form>
+        <script>
+            // This function will update the hidden textarea with the content from the contenteditable code block
+            function updateContent() {
+                var editableCode = document.getElementById("editable-code");
+                var hiddenContent = document.getElementById("hidden-content");
+                
+                // Set the content of the hidden textarea to the content of the editable code block
+                hiddenContent.value = editableCode.innerText;
+            }
+
+            // Initialize syntax highlighting
+            window.onload = function() {
+                hljs.highlightAll();
+            };
+        </script>
     </div>
 </body>
