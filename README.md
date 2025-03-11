@@ -5,9 +5,14 @@ This node.js app is a web interface for virtual hosts management including creat
 <h2>.env</h2>
 <p>Create file name .env with variables below:</p>
 <pre>
+#PORT will be use as a port for this node application.
 PORT=
+
+#Web Interface Login.
 USERNAME=
 PASSWORD=
+
+#.conf folder location.
 NGINX_PATH=/etc/nginx/sites-enabled/
 </pre>
 <ul>
