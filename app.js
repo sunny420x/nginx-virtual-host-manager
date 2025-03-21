@@ -51,18 +51,32 @@ app.get('/', (req, res) => {
                     if (err) console.error(err);
                     if (stderr) console.error(stderr);
                     nodeapps = nodeapps.trim().split('\n')
-                    if(req.query.alert != undefined) {
-                        res.render('main', {
-                            alert: req.query.alert,
-                            files:files,
-                            nodeapps:nodeapps
-                        })   
-                    } else {
-                        res.render('main', {
-                            files:files,
-                            nodeapps:nodeapps
-                        })   
-                    }
+                    exec(`pm2 list | awk 'NR>2 {print $14}'`, (err, nodeapps_uptime, stderr) => {
+                        if (err) console.error(err);
+                        if (stderr) console.error(stderr);
+                        nodeapps_uptime = nodeapps_uptime.trim().split('\n')
+                        exec(`pm2 list | awk 'NR>2 {print $18}'`, (err, nodeapps_status, stderr) => {
+                            if (err) console.error(err);
+                            if (stderr) console.error(stderr);
+                            nodeapps_status = nodeapps_status.trim().split('\n')
+                            if(req.query.alert != undefined) {
+                                res.render('main', {
+                                    alert: req.query.alert,
+                                    files:files,
+                                    nodeapps:nodeapps,
+                                    nodeapps_uptime:nodeapps_uptime,
+                                    nodeapps_status:nodeapps_status,
+                                })   
+                            } else {
+                                res.render('main', {
+                                    files:files,
+                                    nodeapps:nodeapps,
+                                    nodeapps_uptime:nodeapps_uptime,
+                                    nodeapps_status:nodeapps_status,
+                                })   
+                            }
+                        })
+                    })
                 });
             });
         } else {
@@ -289,7 +303,7 @@ app.get('/getMemoryStat', (req,res) => {
 app.get('/getUptime', (req,res) => {
     checkAdmin(req).then((result) => {
         if(result) {
-            exec(`uptime | awk -F'up |,|:' '{print $2}' | awk '{print $1,"days,", $2,"hours,", $3,"minutes"}`, (err, stdout, stderr) => {
+            exec(`uptime -p | sed 's/up //'`, (err, stdout, stderr) => {
                 if (err) console.error(err);
                 if (stderr) console.error(stderr);
                 res.send(`<b>Uptime</b>: ${stdout}`)

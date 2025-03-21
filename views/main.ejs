@@ -154,17 +154,37 @@
                     <h2>Virtual Host not found...</h2>
                 </div>
             <%}%>
-            <%if(locals.nodeapps) {%>
+            <%
+            
+            if(locals.nodeapps) {
+                i = 0
+            %>
             <div class="col-lg mb-4 card p-4">
                 <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals)</h3>
                 <table class="table table-dark">
                     <tr>
                         <th>Name</th>
+                        <th>Status</th>
+                        <th>Uptime</th>
                         <th>Action</th>
                     </tr>
                     <%nodeapps.forEach((name) => {%>
                         <tr>
+                            <td class="text-center">
+                                <% switch (nodeapps_status[i]) { 
+                                    case "online": %>
+                                        <span class="text-success">⬤</span>
+                                    <% break; 
+                                    case "stopped": %>
+                                        <span class="text-secondary">⬤</span>
+                                    <% break; 
+                                    case "error": %>
+                                        <span class="text-danger">⬤</span>
+                                    <% break; 
+                                } %>
+                            </td>
                             <td><%=name%></td>
+                            <td><%=nodeapps_uptime[i]%></td>
                             <td>
                                 <button class="btn btn-success btn-sm" onclick="
                                 window.location.href = '/start/node/<%=name%>'
@@ -178,6 +198,7 @@
                             </td>
                         </tr>
                     <%
+                    i++
                     })%>
                 </table>
             </div>
