@@ -59,22 +59,36 @@ app.get('/', (req, res) => {
                             if (err) console.error(err);
                             if (stderr) console.error(stderr);
                             nodeapps_status = nodeapps_status.trim().split('\n')
-                            if(req.query.alert != undefined) {
-                                res.render('main', {
-                                    alert: req.query.alert,
-                                    files:files,
-                                    nodeapps:nodeapps,
-                                    nodeapps_uptime:nodeapps_uptime,
-                                    nodeapps_status:nodeapps_status,
-                                })   
-                            } else {
-                                res.render('main', {
-                                    files:files,
-                                    nodeapps:nodeapps,
-                                    nodeapps_uptime:nodeapps_uptime,
-                                    nodeapps_status:nodeapps_status,
-                                })   
-                            }
+                            exec(`pm2 list | awk 'NR>2 {print $22}'`, (err, nodeapps_mem, stderr) => {
+                                if (err) console.error(err);
+                                if (stderr) console.error(stderr);
+                                nodeapps_mem = nodeapps_mem.trim().split('\n')
+                                exec(`netstat -tnlp | awk '{print $4}' | grep -oE ':[0-9]+' | grep -oE '[0-9]+' | sort -n`, (err, used_ports, stderr) => {
+                                    if (err) console.error(err);
+                                    if (stderr) console.error(stderr);
+                                    used_ports = used_ports.trim().split('\n')
+                                    if(req.query.alert != undefined) {
+                                        res.render('main', {
+                                            alert: req.query.alert,
+                                            files:files,
+                                            nodeapps:nodeapps,
+                                            nodeapps_uptime:nodeapps_uptime,
+                                            nodeapps_status:nodeapps_status,
+                                            nodeapps_mem:nodeapps_mem,
+                                            used_ports:used_ports,
+                                        })   
+                                    } else {
+                                        res.render('main', {
+                                            files:files,
+                                            nodeapps:nodeapps,
+                                            nodeapps_uptime:nodeapps_uptime,
+                                            nodeapps_status:nodeapps_status,
+                                            nodeapps_mem:nodeapps_mem,
+                                            used_ports:used_ports,
+                                        })   
+                                    }
+                                })
+                            })
                         })
                     })
                 });

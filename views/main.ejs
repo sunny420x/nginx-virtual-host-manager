@@ -122,6 +122,16 @@
         </div>
     </div>
     <div class="container">
+        <div class="card m-2">
+            <h2 class="card-header">Used ports</h2>
+            <div class="card-body">
+                <% used_ports.forEach(port => {%>
+                    <span class="badge bg-dark text-white fs-6"><%=port%></span>
+                 <%})%>
+            </div>
+        </div>
+    </div>
+    <div class="container">
         <div class="row m-2 gap-4">
             <%if(locals.files) {%>
             <div class="col-lg mb-4 card p-4">
@@ -166,6 +176,7 @@
                         <th>Name</th>
                         <th>Status</th>
                         <th>Uptime</th>
+                        <th>Memory</th>
                         <th>Action</th>
                     </tr>
                     <%nodeapps.forEach((name) => {%>
@@ -185,6 +196,7 @@
                             </td>
                             <td><%=name%></td>
                             <td><%=nodeapps_uptime[i]%></td>
+                            <td><%=nodeapps_mem[i]%></td>
                             <td>
                                 <button class="btn btn-success btn-sm" onclick="
                                 window.location.href = '/start/node/<%=name%>'
