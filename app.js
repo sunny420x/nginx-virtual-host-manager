@@ -45,56 +45,82 @@ app.get('/logout',(req,res) => {
 app.get('/', (req, res) => {
     checkAdmin(req).then((result) => {
         if(result) {
-            fs.readdir(path, (err, files) => {
-                if(err) console.log(err);
-                exec(`pm2 list | awk 'NR>2 {print $4}'`, (err, nodeapps, stderr) => {
-                    if (err) console.error(err);
-                    if (stderr) console.error(stderr);
-                    nodeapps = nodeapps.trim().split('\n')
-                    exec(`pm2 list | awk 'NR>2 {print $14}'`, (err, nodeapps_uptime, stderr) => {
-                        if (err) console.error(err);
-                        if (stderr) console.error(stderr);
-                        nodeapps_uptime = nodeapps_uptime.trim().split('\n')
-                        exec(`pm2 list | awk 'NR>2 {print $18}'`, (err, nodeapps_status, stderr) => {
-                            if (err) console.error(err);
-                            if (stderr) console.error(stderr);
-                            nodeapps_status = nodeapps_status.trim().split('\n')
-                            exec(`pm2 list | awk 'NR>2 {print $22}'`, (err, nodeapps_mem, stderr) => {
-                                if (err) console.error(err);
-                                if (stderr) console.error(stderr);
-                                nodeapps_mem = nodeapps_mem.trim().split('\n')
-                                exec(`netstat -tnlp | awk '{print $4}' | grep -oE ':[0-9]+' | grep -oE '[0-9]+' | sort -n`, (err, used_ports, stderr) => {
-                                    if (err) console.error(err);
-                                    if (stderr) console.error(stderr);
-                                    used_ports = used_ports.trim().split('\n')
-                                    if(req.query.alert != undefined) {
-                                        res.render('main', {
-                                            alert: req.query.alert,
-                                            files:files,
-                                            nodeapps:nodeapps,
-                                            nodeapps_uptime:nodeapps_uptime,
-                                            nodeapps_status:nodeapps_status,
-                                            nodeapps_mem:nodeapps_mem,
-                                            used_ports:used_ports,
-                                        })   
-                                    } else {
-                                        res.render('main', {
-                                            files:files,
-                                            nodeapps:nodeapps,
-                                            nodeapps_uptime:nodeapps_uptime,
-                                            nodeapps_status:nodeapps_status,
-                                            nodeapps_mem:nodeapps_mem,
-                                            used_ports:used_ports,
-                                        })   
-                                    }
-                                })
-                            })
-                        })
-                    })
-                });
-            });
+            if(req.query.alert != undefined) {
+                res.render('main', {
+                    alert: req.query.alert,
+                })   
+            } else {
+                res.render('main')   
+            }
         } else {
             res.redirect("/login")
+        }
+    })
+})
+
+app.get('/getVirtualHostsList', (req, res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            fs.readdir(path, (err, files) => {
+                if(err) console.log(err);
+                res.render('components/virtualhosts', {
+                    files:files,
+                })
+            })
+        } else {
+            res.status(401).send("Please login.")
+        }
+    })
+})
+
+app.get('/getUsedPorts', (req, res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            exec(`netstat -tnlp | awk '{print $4}' | grep -oE ':[0-9]+' | grep -oE '[0-9]+' | sort -n`, (err, used_ports, stderr) => {
+            if (err) console.error(err);
+            if (stderr) console.error(stderr);
+                used_ports = used_ports.trim().split('\n')
+                res.render('components/used_ports', {
+                    used_ports:used_ports,
+                })
+            })
+        } else {
+            res.status(401).send("Please login.")
+        }
+    })
+})
+
+app.get('/getNodeApps', (req, res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            exec(`pm2 list | awk 'NR>2 {print $4}'`, (err, nodeapps, stderr) => {
+                if (err) console.error(err);
+                if (stderr) console.error(stderr);
+                nodeapps = nodeapps.trim().split('\n')
+                exec(`pm2 list | awk 'NR>2 {print $14}'`, (err, nodeapps_uptime, stderr) => {
+                    if (err) console.error(err);
+                    if (stderr) console.error(stderr);
+                    nodeapps_uptime = nodeapps_uptime.trim().split('\n')
+                    exec(`pm2 list | awk 'NR>2 {print $18}'`, (err, nodeapps_status, stderr) => {
+                        if (err) console.error(err);
+                        if (stderr) console.error(stderr);
+                        nodeapps_status = nodeapps_status.trim().split('\n')
+                        exec(`pm2 list | awk 'NR>2 {print $22}'`, (err, nodeapps_mem, stderr) => {
+                            if (err) console.error(err);
+                            if (stderr) console.error(stderr);
+                            nodeapps_mem = nodeapps_mem.trim().split('\n')
+                            res.render('components/nodeapps', {
+                                nodeapps:nodeapps,
+                                nodeapps_uptime:nodeapps_uptime,
+                                nodeapps_status:nodeapps_status,
+                                nodeapps_mem:nodeapps_mem,
+                            })   
+                        }) 
+                    })   
+                })     
+            })
+        } else {
+            res.status(401).send("Please login.")
         }
     })
 })
@@ -354,10 +380,11 @@ app.get('/restart/node/:name', (req,res) => {
     checkAdmin(req).then((result) => {
         if(result) {
             const name = req.params.name
-            exec(`pm2 restart ${name}`, (err, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-                res.redirect(`/?alert=Restart ${name} success !`)
+            exec(`pm2 restart ${name}`, (err, stdout) => {
+                if (err) {
+                    res.status(500).send(err);
+                }
+                res.status(200).send(`Restarted ${name} !`)
             });
         }
     })
@@ -367,10 +394,11 @@ app.get('/start/node/:name', (req,res) => {
     checkAdmin(req).then((result) => {
         if(result) {
             const name = req.params.name
-            exec(`pm2 start ${name}`, (err, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-                res.redirect(`/?alert=Start ${name} success !`)
+            exec(`pm2 start ${name}`, (err, stdout) => {
+                if (err) {
+                    res.status(500).send(err);
+                }
+                res.status(200).send(`Started ${name} !`)
             });
         }
     })
@@ -380,10 +408,24 @@ app.get('/stop/node/:name', (req,res) => {
     checkAdmin(req).then((result) => {
         if(result) {
             const name = req.params.name
-            exec(`pm2 stop ${name}`, (err, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-                res.redirect(`/?alert=Stop ${name} success !`)
+            exec(`pm2 stop ${name}`, (err, stdout) => {
+                if (err) {
+                    res.status(500).send(err);
+                }
+                res.status(200).send(`Stopped ${name} !`)
+            });
+        }
+    })
+})
+
+app.get('/pm2/save', (req,res) => {
+    checkAdmin(req).then((result) => {
+        if(result) {
+            exec(`pm2 save`, (err, stdout) => {
+                if (err) {
+                    res.status(500).send(err);
+                }
+                res.status(200).send(`Apps has been saved !`)
             });
         }
     })

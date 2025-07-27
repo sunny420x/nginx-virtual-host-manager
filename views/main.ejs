@@ -14,11 +14,29 @@
         }
 
         input::placeholder {
-        color: #ccc !important;
+            color: #ccc !important;
         }
 
         input::-ms-input-placeholder { /* Edge 12 -18 */
-        color: #ccc !important;
+            color: #ccc !important;
+        }
+
+        .loader {
+            width: 60px;
+            aspect-ratio: 4;
+            --_g: no-repeat radial-gradient(circle closest-side,#fff 90%,#0000);
+            background: 
+                var(--_g) 0%   50%,
+                var(--_g) 50%  50%,
+                var(--_g) 100% 50%;
+            background-size: calc(100%/3) 100%;
+            animation: l7 1s infinite linear;
+            margin: 20px auto;
+        }
+        @keyframes l7 {
+            33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
+            50%{background-size:calc(100%/3) 100%,calc(100%/3) 0%  ,calc(100%/3) 100%}
+            66%{background-size:calc(100%/3) 100%,calc(100%/3) 100%,calc(100%/3) 0%  }
         }
     </style>
     <%-include('include/head')%>
@@ -44,16 +62,16 @@
                 <div class="black-bg p-3">
                     <h4 class="mb-3"><i class="fa-solid fa-server me-2"></i> Server Details</h4>
                     <ul class="bg-dark p-4 mb-0">
-                        <li class="list-group-item"><i class="fa-solid fa-microchip"></i> <span id="cpuStat"></span></li>
-                        <li class="list-group-item"><i class="fa-solid fa-memory"></i> <span id="memStat"></span></li>
-                        <li class="list-group-item"><i class="fa-regular fa-clock"></i> <span id="uptime"></span></li>
-                        <li class="list-group-item"><i class="fa-solid fa-coins"></i> <span id="ElectricCost"></span></li>
+                        <li class="list-group-item"><i class="fa-solid fa-microchip"></i> <span id="cpuStat">Loading...</span></li>
+                        <li class="list-group-item"><i class="fa-solid fa-memory"></i> <span id="memStat">Loading...</span></li>
+                        <li class="list-group-item"><i class="fa-regular fa-clock"></i> <span id="uptime">Loading...</span></li>
+                        <li class="list-group-item"><i class="fa-solid fa-coins"></i> <span id="ElectricCost">Loading...</span></li>
                     </ul>
                 </div>
                 <script>
-                    uptime = document.getElementById('uptime')
-                    memStat = document.getElementById('memStat')
-                    cpuStat = document.getElementById('cpuStat')
+                    const uptime = document.getElementById('uptime')
+                    const memStat = document.getElementById('memStat')
+                    const cpuStat = document.getElementById('cpuStat')
         
                     function getSystemStat() {
                         fetch('/getUptime').then((res) => {
@@ -98,7 +116,10 @@
                                 return res.text()
                             }
                         }).then((data) => {
-                            alert('Nginx is restarting...')
+                            Swal.fire({
+                                title: 'Nginx is restarting!',
+                                icon: 'success'
+                            })
                             window.location.href = '/?alert=Restart Success.';
                         })"><i class="fa-solid fa-arrows-rotate"></i> Restart Web Server</button>
                     </div>
@@ -124,101 +145,69 @@
     <div class="container">
         <div class="card m-2">
             <h2 class="card-header">Used ports</h2>
-            <div class="card-body">
-                <% used_ports.forEach(port => {%>
-                    <span class="badge bg-dark text-white fs-6"><%=port%></span>
-                 <%})%>
+            <div class="card-body" id="used_ports">
+                <div class="loader"></div>
             </div>
+            <script>
+                function getUsedPorts() {
+                    fetch('/getUsedPorts').then(res => {
+                        if(!res.ok) {
+                            throw new Error('Fail to fetch.')
+                        }
+                        return res.text()
+                    }).then(data => {
+                        document.getElementById('used_ports').innerHTML = data
+                    }).catch(err => {
+                        alert(err)
+                    })
+                }
+
+                getUsedPorts()
+            </script>
         </div>
     </div>
     <div class="container">
         <div class="row m-2 gap-4">
-            <%if(locals.files) {%>
-            <div class="col-lg mb-4 card p-4">
-                <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Virtual Host Lists (<%=files.length%> totals)</h3>
-                <table class="table table-dark">
-                    <tr>
-                        <th>Name</th>
-                        <th>Action</th>
-                    </tr>
-                    <%files.forEach((file) => {%>
-                        <tr>
-                            <td><%=file%></td>
-                            <td>
-                                <button class="btn btn-primary btn-sm" onclick="
-                                window.location.href = '/view/<%=file%>'
-                                "><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button class="btn btn-danger btn-sm" onclick="
-                                if (confirm('Do you want to delete this virtual host?')) {
-                                    window.location.href = '/delete/<%=file%>'
-                                }
-                                "><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    <%
-                    })%>
-                </table>
+            <div class="col-lg mb-4 card p-4" id="VirtualHostsList">
+                <div class="loader"></div>
             </div>
-            <%} else {%>
-                <div class="col-lg mb-4 card p-4">
-                    <h2>Virtual Host not found...</h2>
-                </div>
-            <%}%>
-            <%
-            
-            if(locals.nodeapps) {
-                i = 0
-            %>
+            <script>
+                function getVirtualHostsList() {
+                    fetch('/getVirtualHostsList').then(res => {
+                        if(!res.ok) {
+                            throw new Error('Fail to fetch.')
+                        }
+                        return res.text()
+                    }).then(data => {
+                        document.getElementById('VirtualHostsList').innerHTML = data
+                    }).catch(err => {
+                        alert(err)
+                    })
+                }
+
+                getVirtualHostsList()
+            </script>
             <div class="col-lg mb-4 card p-4">
-                <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals)</h3>
-                <table class="table table-dark">
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Uptime</th>
-                        <th>Memory</th>
-                        <th>Action</th>
-                    </tr>
-                    <%nodeapps.forEach((name) => {%>
-                        <tr>
-                            <td class="text-center">
-                                <% switch (nodeapps_status[i]) { 
-                                    case "online": %>
-                                        <span class="text-success">⬤</span>
-                                    <% break; 
-                                    case "stopped": %>
-                                        <span class="text-secondary">⬤</span>
-                                    <% break; 
-                                    case "error": %>
-                                        <span class="text-danger">⬤</span>
-                                    <% break; 
-                                } %>
-                            </td>
-                            <td><%=name%></td>
-                            <td><%=nodeapps_uptime[i]%></td>
-                            <td><%=nodeapps_mem[i]%></td>
-                            <td>
-                                <button class="btn btn-success btn-sm" onclick="
-                                window.location.href = '/start/node/<%=name%>'
-                                "><i class="fa-solid fa-play"></i></button>
-                                <button class="btn btn-primary btn-sm" onclick="
-                                window.location.href = '/restart/node/<%=name%>'
-                                "><i class="fa-solid fa-arrows-rotate"></i></button>
-                                <button class="btn btn-danger btn-sm" onclick="
-                                window.location.href = '/stop/node/<%=name%>'
-                                "><i class="fa-solid fa-stop"></i></button>
-                            </td>
-                        </tr>
-                    <%
-                    i++
-                    })%>
-                </table>
-            </div>
-            <%} else {%>
-                <div class="col-lg mb-4 card p-4">
-                    <h2>Node app not found...</h2>
+                <div id="NodeAppsList">
+                    <div class="loader"></div>
                 </div>
-            <%}%>
+            </div>
+            <script>
+                function getNodeApps() {
+                    fetch('/getNodeApps').then(res => {
+                        if(!res.ok) {
+                            throw new Error('Fail to fetch.')
+                        }
+                        return res.text()
+                    }).then(data => {
+                        document.getElementById('NodeAppsList').innerHTML = data
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                }
+
+                getNodeApps()
+            </script>
         </div>
     </div>
     <div class="modal fade" id="nodejsvhost" tabindex="-1" aria-labelledby="nodejsvhost" aria-hidden="true">
@@ -308,6 +297,75 @@
         </div>
         </div>
     </div>
+    <script>
+        function startNodeApp(name) {
+            fetch('/start/node/'+name).then(res => {
+                if(!res.ok) {
+                    throw new Error('Fail to fetch.')
+                }
+                return res.text()
+            }).then(data => {
+                Swal.fire({
+                    title: data,
+                    icon: 'success'
+                })
+                getNodeApps()
+            }).catch(err => {
+                console.log(err)
+            })
+        }
+
+        function stopNodeApp(name) {
+            fetch('/stop/node/'+name).then(res => {
+                if(!res.ok) {
+                    throw new Error('Fail to fetch.')
+                }
+                return res.text()
+            }).then(data => {
+                Swal.fire({
+                    title: data,
+                    icon: 'success'
+                })
+                getNodeApps()
+            }).catch(err => {
+                console.log(err)
+            })
+        }
+
+        function restartNodeApp(name) {
+            fetch('/restart/node/'+name).then(res => {
+                if(!res.ok) {
+                    throw new Error('Fail to fetch.')
+                }
+                return res.text()
+            }).then(data => {
+                Swal.fire({
+                    title: data,
+                    icon: 'success'
+                })
+                getNodeApps()
+            }).catch(err => {
+                console.log(err)
+            })
+        }
+
+        function pm2Save() {
+            fetch('/pm2/save').then(res => {
+                if(!res.ok) {
+                    throw new Error('Fail to fetch.')
+                }
+                return res.text()
+            }).then(data => {
+                Swal.fire({
+                    title: data,
+                    icon: 'success'
+                })
+            }).catch(err => {
+                console.log(err)
+            })
+        }
+    </script>
     <%-include('include/footer')%>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>

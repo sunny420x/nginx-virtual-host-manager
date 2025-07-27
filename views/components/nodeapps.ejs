@@ -1,0 +1,38 @@
+<% i = 0 %>
+<h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals) <button class="btn btn-dark" onclick="pm2Save()"><i class="fa-solid fa-floppy-disk"></i></button></h3>
+<table class="table table-dark">
+    <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Uptime</th>
+        <th>Memory</th>
+        <th>Action</th>
+    </tr>
+    <%nodeapps.forEach((name) => {%>
+        <tr>
+            <td class="text-center">
+                <% switch (nodeapps_status[i]) { 
+                    case "online": %>
+                        <span class="text-success">⬤</span>
+                    <% break; 
+                    case "stopped": %>
+                        <span class="text-secondary">⬤</span>
+                    <% break; 
+                    case "error": %>
+                        <span class="text-danger">⬤</span>
+                    <% break; 
+                } %>
+            </td>
+            <td><%=name%></td>
+            <td><%=nodeapps_uptime[i]%></td>
+            <td><%=nodeapps_mem[i]%></td>
+            <td>
+                <button class="btn btn-success btn-sm" onclick="startNodeApp('<%=name%>')"><i class="fa-solid fa-play"></i></button>
+                <button class="btn btn-primary btn-sm" onclick="restartNodeApp('<%=name%>')"><i class="fa-solid fa-arrows-rotate"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="stopNodeApp('<%=name%>')"><i class="fa-solid fa-stop"></i></button>
+            </td>
+        </tr>
+    <%
+    i++
+    })%>
+</table>
