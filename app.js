@@ -197,7 +197,7 @@ function createPHPVirtualHost(app_name, server_name, ssl_file_name, ssl_enabled,
         template += `\n\n\troot ${root_dir};`
     
         if(ssl_enabled) {
-            template += `\n\tssl_certificate /Storage/SSL_KEY/${ssl_file_name}-public-key.pem;\n\tssl_certificate_key /Storage/SSL_KEY/${ssl_file_name}-private-key.pem;`
+            template += `\n\tssl_certificate /etc/nginx/ssl/${ssl_file_name}.crt;\n\tssl_certificate_key /etc/nginx/sll/${ssl_file_name}.key;`
         }
     
         template += `\n\taccess_log /var/log/nginx/${app_name}-access.log;\n\terror_log /var/log/nginx/${app_name}-error.log;\n`
@@ -228,8 +228,7 @@ function createNodeJSVirtualHost(app_name, server_name, app_path, ssl_file_name,
         template += `\n\n\tserver_name ${server_name};`
     
         if(ssl_enabled) {
-            template += `\n\tssl_certificate /Storage/SSL_KEY/${ssl_file_name}-public-key.pem;\n\tssl_certificate_key /Storage/SSL_KEY/${ssl_file_name}-private-key.pem;
-            `
+            template += `\n\tssl_certificate /etc/nginx/ssl/${ssl_file_name}.crt;\n\tssl_certificate_key /etc/nginx/sll/${ssl_file_name}.key;`
         }
     
         template += `\n\tproxy_connect_timeout 3;\n\tproxy_send_timeout 3;\n\tproxy_read_timeout 3;\n\tsend_timeout 3;

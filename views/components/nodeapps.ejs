@@ -2,8 +2,8 @@
 <h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals) <button class="btn btn-dark" onclick="pm2Save()"><i class="fa-solid fa-floppy-disk"></i></button></h3>
 <table class="table table-dark">
     <tr>
-        <th>Name</th>
         <th>Status</th>
+        <th>Name</th>
         <th>Uptime</th>
         <th>Memory</th>
         <th>Action</th>
@@ -11,7 +11,7 @@
     <%nodeapps.forEach((name) => {%>
         <tr>
             <td class="text-center">
-                <% switch (nodeapps_status[i]) { 
+                <% switch (nodeapps_status[i].trim()) { 
                     case "online": %>
                         <span class="text-success">⬤</span>
                     <% break; 
