@@ -1,27 +1,100 @@
+<!DOCTYPE html>
+<html>
 <head>
     <title>Login | Nginx Virtual Host Management System</title>
     <%-include('include/head')%>
+    <style>
+        body {
+            background-color: #0d1117; /* Dark background แบบเนียนตา */
+            color: #c9d1d9;
+        }
+        .login-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            max-width: 420px;
+            width: 100%;
+        }
+        .form-control {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            color: #f0f6fc;
+            padding-left: 2.5rem; /* เว้นที่ให้ไอคอนด้านซ้าย */
+        }
+        .form-control:focus {
+            background-color: #0d1117;
+            border-color: #58a6ff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.25rem rgba(56, 139, 253, 0.25);
+        }
+        .input-group-text {
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            position: absolute;
+            z-index: 10;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0.5rem;
+        }
+        .btn-primary {
+            background-color: #238636; /* สีเขียวสไตล์ DevOps/GitHub หรือใช้ #1f6feb สำหรับโทนน้ำเงิน */
+            border-color: #238636;
+            font-weight: 500;
+            padding: 0.6rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: #2ea043;
+            border-color: #2ea043;
+            box-shadow: 0 0 12px rgba(46, 160, 67, 0.4);
+        }
+    </style>
 </head>
-<body class="bg-dark">
-    <div class="container my-4 card p-4">
-      <div class="p-4">
-        <h2><i class="fa-solid fa-cog me-2"></i> Nginx Virtual Host Management System.</h2>
-        <hr>
-        <form action="/login" method="post">
-            <div class="">
-              <div class="mb-3 col-lg">
-                <label for="" class="form-label">Username: </label>
-                <input type="text" class="form-control" id="" name="username" required>
-              </div>
-              <div class="mb-3 col-lg">
-                <label for="" class="form-label">Password:</label>
-                <input type="password" class="form-control" id="" name="password" required>
-              </div>
+<body class="d-flex align-items-center justify-content-center min-vh-100 m-0">
+
+    <div class="login-card p-4 p-sm-5 my-4">
+        <!-- Header Section -->
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-dark bg-opacity-50 text-success rounded-circle mb-3" style="width: 60px; height: 60px; border: 1px solid #30363d;">
+                <i class="fa-solid fa-server fa-2x"></i>
             </div>
-            <button type="submit" class="btn btn-primary col-lg"><i class="fa fa-sign-in me-2"></i> Login</button>
+            <h4 class="fw-bold text-white mb-1">Nginx VHost Manager</h4>
+            <p class="text-secondary small">Login to mannage your Nginx Virtual Host.</p>
+        </div>
+
+        <!-- Form Section -->
+        <form action="/login" method="post">
+            <!-- Username -->
+            <div class="mb-3">
+                <label for="username" class="form-label small text-secondary">Username</label>
+                <div class="position-relative">
+                    <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your login username" required autocomplete="username">
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label for="password" class="form-label small text-secondary">Password</label>
+                </div>
+                <div class="position-relative">
+                    <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+            </div>
+
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100 mb-2">
+                <i class="fa-solid fa-right-to-bracket me-2"></i> Login
+            </button>
         </form>
-      </div>
     </div>
+
     <%-include('include/footer')%>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
+</html>
