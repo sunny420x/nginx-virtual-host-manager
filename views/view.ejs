@@ -1,40 +1,179 @@
 <head>
-    <title>Control Panel | Nginx Virtual Host Management System</title>
+    <title>Edit Config (<%=name%>) | Nginx Management System</title>
     <%-include('include/head')%>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <!-- Highlight.js CSS & JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css" integrity="sha512-Jk4AqjWsdSzSWCSuQTfYRIF84Rq/eV0G2+tu07byYwHcbTGfdmLrHjUSwvzp5HvbiqK4ibmNwdcG49Y5RGYPTg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css" integrity="sha512-Jk4AqjWsdSzSWCSuQTfYRIF84Rq/eV0G2+tu07byYwHcbTGfdmLrHjUSwvzp5HvbiqK4ibmNwdcG49Y5RGYPTg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <script>hljs.highlightAll();</script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Prompt:wght@300;400;500;600&display=swap');
+
+        :root {
+            --bg-body: #0d1117;
+            --bg-card: #161b22;
+            --bg-editor: #282c34; /* Atom One Dark background */
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+        }
+
+        body {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main);
+            font-family: 'Prompt', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation / Breadcrumb */
+        .top-bar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.8rem 1.5rem;
+            transition: background 0.2s ease;
+        }
+        .top-bar:hover {
+            background-color: #1c2128;
+        }
+
+        /* Code Editor Wrapper */
+        .editor-container {
+            background-color: var(--bg-editor);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .editor-header {
+            background-color: #21252b;
+            border-bottom: 1px solid #181a1f;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .editor-title {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #abb2bf;
+        }
+
+        /* Code Block Styling */
+        pre {
+            margin: 0;
+            padding: 0;
+        }
+
+        code#editable-code {
+            font-family: 'Fira Code', monospace, 'Courier New';
+            font-size: 0.95rem;
+            line-height: 1.6;
+            padding: 1.25rem !important;
+            min-height: 420px;
+            max-height: 65vh;
+            overflow-y: auto;
+            outline: none;
+            display: block;
+            white-space: pre;
+            border-radius: 0 0 10px 10px;
+        }
+
+        code#editable-code:focus {
+            box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.3);
+        }
+
+        /* Custom Scrollbar for Code Editor */
+        code#editable-code::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        code#editable-code::-webkit-scrollbar-track {
+            background: var(--bg-editor);
+        }
+        code#editable-code::-webkit-scrollbar-thumb {
+            background: #3e4451;
+            border-radius: 4px;
+        }
+        code#editable-code::-webkit-scrollbar-thumb:hover {
+            background: #4b5263;
+        }
+
+        /* Save Button */
+        .btn-save {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green);
+            color: #ffffff;
+            font-weight: 500;
+            padding: 0.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-save:hover {
+            background-color: var(--accent-green-hover);
+            border-color: var(--accent-green-hover);
+            box-shadow: 0 0 15px rgba(46, 160, 67, 0.4);
+            color: #ffffff;
+        }
+    </style>
 </head>
-<body class="bg-dark">
-    <div class="bg-dark text-white mb-3" onclick="window.location.href='/'" style="cursor: pointer;">
-        <i class="fa-solid fa-chevron-left p-4"></i> <%=name%>
+<body>
+
+    <!-- Back Button / Header Navigation -->
+    <div class="top-bar text-white d-flex align-items-center" onclick="window.location.href='/'" style="cursor: pointer;">
+        <i class="fa-solid fa-arrow-left me-3 text-secondary"></i>
+        <span class="text-secondary small me-2">Virtual Hosts /</span>
+        <span class="fw-medium text-white"><%=name%></span>
     </div>
-    <div class="container">
+
+    <!-- Main Container -->
+    <div class="container my-4 flex-grow-1">
         <form action="/update_file" method="post" onsubmit="updateContent()">
             <input type="hidden" name="file_name" value="<%=name%>">
-            <pre><code id="editable-code" class="language-nginx" contenteditable="true" name="content"><%=content%></code></pre>
+            
+            <!-- Code Editor Window -->
+            <div class="editor-container mb-3">
+                <!-- Editor Header Bar -->
+                <div class="editor-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary bg-opacity-20 text-info fw-normal me-2">NGINX</span>
+                        <span class="editor-title"><i class="fa-regular fa-file-code me-2"></i><%=name%></span>
+                    </div>
+                    <span class="text-secondary small d-none d-sm-inline"><i class="fa-solid fa-pen-to-square me-1"></i> Editable</span>
+                </div>
+
+                <!-- Editable Code Field -->
+                <pre><code id="editable-code" class="language-nginx" contenteditable="true" spellcheck="false" name="content"><%=content%></code></pre>
+            </div>
+
+            <!-- Hidden Input for Form Submission -->
             <textarea id="hidden-content" name="content" style="display: none;"></textarea>
-            <button class="btn-primary btn mt-4 w-100"><i class="fa-solid fa-floppy-disk me-2"></i> Save</button>
+
+            <!-- Save Action Button -->
+            <button type="submit" class="btn btn-save w-100 py-2.5">
+                <i class="fa-solid fa-floppy-disk me-2"></i> บันทึกการเปลี่ยนแปลง (Save Config)
+            </button>
         </form>
+
         <script>
-            // This function will update the hidden textarea with the content from the contenteditable code block
+            // Update hidden textarea content before submitting form
             function updateContent() {
                 var editableCode = document.getElementById("editable-code");
                 var hiddenContent = document.getElementById("hidden-content");
-                
-                // Set the content of the hidden textarea to the content of the editable code block
                 hiddenContent.value = editableCode.innerText;
             }
 
-            // Initialize syntax highlighting
+            // Initialize syntax highlighting on load
             window.onload = function() {
                 hljs.highlightAll();
             };
         </script>
     </div>
+
     <%-include('include/footer')%>
 </body>
