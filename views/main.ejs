@@ -1,37 +1,82 @@
 <head>
     <title>Control Panel | Nginx Virtual Host Management System</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
+
+        :root {
+            --bg-body: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #0d1117;
+            --border-color: #30363d;
+            --accent-blue: #58a6ff;
+            --text-main: #c9d1d9;
+            --text-heading: #f0f6fc;
+        }
 
         * {
-            font-family: 'Prompt';
+            font-family: 'Prompt', sans-serif;
         }
 
-        input[type=text],input[type=number] {
-            background: #222 !important;
-            color: #fff !important;
-            border: 1px solid #333 !important;
+        body {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main);
         }
 
-        input::placeholder {
-            color: #ccc !important;
+        /* Card Customization */
+        .card {
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px !important;
+            color: var(--text-main) !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
 
-        input::-ms-input-placeholder { /* Edge 12 -18 */
-            color: #ccc !important;
+        .card-header {
+            background-color: rgba(255, 255, 255, 0.02) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            color: var(--text-heading) !important;
+            font-weight: 600;
         }
 
+        /* Input Controls */
+        .form-control, .form-select {
+            background-color: var(--bg-input) !important;
+            color: var(--text-heading) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-blue) !important;
+            box-shadow: 0 0 0 0.25rem rgba(88, 166, 255, 0.2) !important;
+        }
+
+        .form-control::placeholder {
+            color: #8b949e !important;
+        }
+
+        /* Stat Boxes */
+        .stat-card {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            height: 100%;
+        }
+
+        /* Custom Pulse Loader */
         .loader {
-            width: 60px;
+            width: 50px;
             aspect-ratio: 4;
-            --_g: no-repeat radial-gradient(circle closest-side,#fff 90%,#0000);
+            --_g: no-repeat radial-gradient(circle closest-side, var(--accent-blue) 90%, #0000);
             background: 
                 var(--_g) 0%   50%,
                 var(--_g) 50%  50%,
                 var(--_g) 100% 50%;
             background-size: calc(100%/3) 100%;
             animation: l7 1s infinite linear;
-            margin: 20px auto;
+            margin: 30px auto;
         }
         @keyframes l7 {
             33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
@@ -41,32 +86,59 @@
     </style>
     <%-include('include/head')%>
 </head>
-<body class="bg-dark">
-    <div class="mx-3 mt-4">
+<body>
+
+    <!-- Alert Section -->
+    <div class="container-fluid px-4 mt-3">
         <%if(locals.alert) {%>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <%=alert%>
+            <div class="alert alert-success alert-dismissible fade show border-0 bg-success bg-opacity-20 text-success" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i><%=alert%>
                 <script>
                     function removeAlert() {
                         window.history.replaceState(null, '', window.location.pathname);
                     }
                 </script>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeAlert()"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close" onclick="removeAlert()"></button>
             </div>
         <%}%>
     </div>
-    <div class="container my-4">
-        <div class="card m-2">
-            <h5 class="card-header p-3"><i class="fa-solid fa-gears mx-2"></i> Nginx Web Server Control Panel</h5>
-            <div class="card-body">
-                <div class="black-bg p-3">
-                    <h4 class="mb-3"><i class="fa-solid fa-server me-2"></i> Server Details</h4>
-                    <ul class="bg-dark p-4 mb-0">
-                        <li class="list-group-item"><i class="fa-solid fa-microchip"></i> <span id="cpuStat">Loading...</span></li>
-                        <li class="list-group-item"><i class="fa-solid fa-memory"></i> <span id="memStat">Loading...</span></li>
-                        <li class="list-group-item"><i class="fa-regular fa-clock"></i> <span id="uptime">Loading...</span></li>
-                    </ul>
+
+    <!-- Main Server Control Panel -->
+    <div class="container-fluid px-4 my-4">
+        <div class="card mb-4">
+            <div class="card-header p-3 d-flex align-items-center">
+                <i class="fa-solid fa-gears text-primary me-2 fa-lg"></i>
+                <h5 class="m-0 fw-bold">Nginx Web Server Control Panel</h5>
+            </div>
+            <div class="card-body p-4">
+                
+                <!-- Server Metrics Overview -->
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-secondary fw-semibold small mb-3">
+                        <i class="fa-solid fa-server me-2"></i>System Status
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="text-secondary small mb-1"><i class="fa-solid fa-microchip me-2 text-info"></i>CPU Usage</div>
+                                <div class="fs-5 fw-bold text-white" id="cpuStat">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="text-secondary small mb-1"><i class="fa-solid fa-memory me-2 text-warning"></i>Memory Usage</div>
+                                <div class="fs-5 fw-bold text-white" id="memStat">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="text-secondary small mb-1"><i class="fa-regular fa-clock me-2 text-success"></i>System Uptime</div>
+                                <div class="fs-5 fw-bold text-white" id="uptime">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <script>
                     const uptime = document.getElementById('uptime')
                     const memStat = document.getElementById('memStat')
@@ -74,78 +146,71 @@
         
                     function getSystemStat() {
                         fetch('/getUptime').then((res) => {
-                        if(res.ok) {
-                            return res.text()
-                        }
-                        }).then((data) => {
-                            uptime.innerHTML = data
-                        })
+                            if(res.ok) return res.text()
+                        }).then((data) => { uptime.innerHTML = data })
+
                         fetch('/getMemoryStat').then((res) => {
-                            if(res.ok) {
-                                return res.text()
-                            }
-                        }).then((data) => {
-                            memStat.innerHTML = data
-                        })
+                            if(res.ok) return res.text()
+                        }).then((data) => { memStat.innerHTML = data })
+
                         fetch('/getCPUusage').then((res) => {
-                            if(res.ok) {
-                                return res.text()
-                            }
-                        }).then((data) => {
-                            cpuStat.innerHTML = data
-                        })
+                            if(res.ok) return res.text()
+                        }).then((data) => { cpuStat.innerHTML = data })
                     }
         
                     getSystemStat()
-        
                     setInterval(getSystemStat, 10000)
                 </script>
-                <div class="row mb-3">
-                    <div class="col">
-                        <button class="btn btn-primary w-100" onclick="
+
+                <!-- Action Controls -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <button class="btn btn-primary w-100 py-2 fw-medium" onclick="
                         fetch('/restart').then((res) => {
-                            if(res.ok) {
-                                return res.text()
-                            }
+                            if(res.ok) return res.text()
                         }).then((data) => {
                             Swal.fire({
                                 title: 'Nginx is restarting!',
-                                icon: 'success'
+                                icon: 'success',
+                                background: '#161b22',
+                                color: '#fff'
                             })
                             window.location.href = '/?alert=Restart Success.';
-                        })"><i class="fa-solid fa-arrows-rotate"></i> Restart Web Server</button>
+                        })">
+                            <i class="fa-solid fa-arrows-rotate me-2"></i> Restart Web Server
+                        </button>
                     </div>
-                    <div class="col">
-                        <button class="btn btn-danger w-100" onclick="if(confirm('Do you want to stop web server ?')) {window.location.href='/stop'}"><i class="fa-solid fa-power-off"></i> Stop Web Server</button>
+                    <div class="col-sm-6">
+                        <button class="btn btn-outline-danger w-100 py-2 fw-medium" onclick="if(confirm('Do you want to stop web server ?')) {window.location.href='/stop'}">
+                            <i class="fa-solid fa-power-off me-2"></i> Stop Web Server
+                        </button>
                     </div>
                 </div>
-                <div class="row grid-2 gap-2 g-0">
-                    <div class="col-lg-auto">
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#nodejsvhost">
-                            <i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host
-                        </button>
-                    </div>
-                    <div class="col-lg-auto">
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#phpvhost">
-                            <i class="fa-solid fa-plus me-2"></i> Create PHP Virtual Host
-                        </button>
-                    </div>
+
+                <!-- Create Virtual Host Actions -->
+                <div class="d-flex flex-wrap gap-2 pt-2 border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-outline-light btn-sm px-3" data-bs-toggle="modal" data-bs-target="#nodejsvhost">
+                        <i class="fa-brands fa-node-js me-2 text-success"></i> Create Node.js Virtual Host
+                    </button>
+                    <button type="button" class="btn btn-outline-light btn-sm px-3" data-bs-toggle="modal" data-bs-target="#phpvhost">
+                        <i class="fa-brands fa-php me-2 text-info"></i> Create PHP Virtual Host
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="container">
-        <div class="card m-2">
-            <h2 class="card-header">Used ports</h2>
-            <div class="card-body" id="used_ports">
+
+        <!-- Used Ports Section -->
+        <div class="card mb-4">
+            <div class="card-header p-3">
+                <h5 class="m-0 fw-bold"><i class="fa-solid fa-network-wired me-2 text-warning"></i>Used Ports</h5>
+            </div>
+            <div class="card-body p-4" id="used_ports">
                 <div class="loader"></div>
             </div>
             <script>
                 function getUsedPorts() {
                     fetch('/getUsedPorts').then(res => {
-                        if(!res.ok) {
-                            throw new Error('Fail to fetch.')
-                        }
+                        if(!res.ok) throw new Error('Fail to fetch.')
                         return res.text()
                     }).then(data => {
                         document.getElementById('used_ports').innerHTML = data
@@ -153,22 +218,22 @@
                         alert(err)
                     })
                 }
-
                 getUsedPorts()
             </script>
         </div>
-    </div>
-    <div class="container">
-        <div class="row m-2 gap-4">
-            <div class="col-lg mb-4 card p-4" id="VirtualHostsList">
-                <div class="loader"></div>
+
+        <!-- Applications & Virtual Hosts Grid -->
+        <div class="row g-4 mb-4">
+            <!-- Virtual Hosts List -->
+            <div class="col-lg-6">
+                <div class="card h-100 p-4" id="VirtualHostsList">
+                    <div class="loader"></div>
+                </div>
             </div>
             <script>
                 function getVirtualHostsList() {
                     fetch('/getVirtualHostsList').then(res => {
-                        if(!res.ok) {
-                            throw new Error('Fail to fetch.')
-                        }
+                        if(!res.ok) throw new Error('Fail to fetch.')
                         return res.text()
                     }).then(data => {
                         document.getElementById('VirtualHostsList').innerHTML = data
@@ -176,20 +241,21 @@
                         alert(err)
                     })
                 }
-
                 getVirtualHostsList()
             </script>
-            <div class="col-lg mb-4 card p-4">
-                <div id="NodeAppsList">
-                    <div class="loader"></div>
+
+            <!-- Node Apps List -->
+            <div class="col-lg-6">
+                <div class="card h-100 p-4">
+                    <div id="NodeAppsList">
+                        <div class="loader"></div>
+                    </div>
                 </div>
             </div>
             <script>
                 function getNodeApps() {
                     fetch('/getNodeApps').then(res => {
-                        if(!res.ok) {
-                            throw new Error('Fail to fetch.')
-                        }
+                        if(!res.ok) throw new Error('Fail to fetch.')
                         return res.text()
                     }).then(data => {
                         document.getElementById('NodeAppsList').innerHTML = data
@@ -197,166 +263,159 @@
                         console.log(err)
                     })
                 }
-
                 getNodeApps()
             </script>
         </div>
     </div>
-    <div class="modal fade" id="nodejsvhost" tabindex="-1" aria-labelledby="nodejsvhost" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel"><i class="fa-solid fa-plus me-2"></i> Create Node.js Virtual Host.</h1>
-            <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+    <!-- Node.js VHost Modal -->
+    <div class="modal fade" id="nodejsvhost" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content card border-0">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 p-3">
+                    <h5 class="modal-title text-white"><i class="fa-brands fa-node-js text-success me-2"></i> Create Node.js Virtual Host</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="/createNodeJSVirtualHost" method="post">
+                        <h6 class="text-primary mb-3"><i class="fa-solid fa-globe me-2"></i>App Settings</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary">App name:</label>
+                                <input type="text" class="form-control" name="app_name" placeholder="my-node-app" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary">Port:</label>
+                                <input type="number" class="form-control" name="port" placeholder="3000" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary">Server Name (Domain):</label>
+                                <input type="text" class="form-control" name="server_name" placeholder="app.example.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary">Node.js Path:</label>
+                                <input type="text" class="form-control" name="app_path" placeholder="/var/www/node-app">
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary my-3"><i class="fa-solid fa-hard-drive me-2"></i>Resources</h6>
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Resource Folders (comma separated):</label>
+                            <input type="text" class="form-control" name="folders" placeholder="css,js,images,videos">
+                        </div>
+
+                        <h6 class="text-primary my-3"><i class="fa-solid fa-shield-halved me-2"></i>SSL Settings</h6>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input bg-dark border-secondary" value="true" name="ssl_enabled" id="node_ssl">
+                            <label class="form-check-label small text-secondary" for="node_ssl">Enable SSL</label>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary">SSL File Name:</label>
+                            <input type="text" class="form-control" name="ssl_file_name" placeholder="e.g. example_com">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa-solid fa-plus me-2"></i> Create Virtual Host</button>
+                    </form>
+                </div>
             </div>
-            <div class="modal-body">
-                <form action="/createNodeJSVirtualHost" method="post">
-                    <h4 class="mb-3"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
-                    <div class="mb-3">
-                      <label for="" class="form-label">App name: </label>
-                      <input type="text" class="form-control" id="" name="app_name" placeholder="abc" required>
-                    </div>
-                    <div class="mb-3">
-                      <label for="" class="form-label">Server Name (Domain Name):</label>
-                      <input type="text" class="form-control" id="" name="server_name" placeholder="abc.sunny420x.com" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="" class="form-label">Node.js Path:</label>
-                        <input type="text" class="form-control" id="" name="app_path" placeholder="/Node/abc">
-                      </div>
-                    <div class="mb-3">
-                        <label for="" class="form-label">Port:</label>
-                        <input type="number" class="form-control" id="" name="port" placeholder="4000-6000" required>
-                    </div>
-                    <h4 class="my-4"><i class="fa-solid fa-hard-drive me-2"></i> Resources:</h4>
-                    <div class="mb-3">
-                        <label for="" class="form-label">Resource Folders (separate with ,):</label>
-                        <input type="text" class="form-control" id="" name="folders" placeholder="css,js,images,videos">
-                    </div>
-                    <h4 class="my-4"><i class="fa-solid fa-key me-2"></i> SSL Settings:</h4>
-                    <div class="mb-3 form-check">
-                      <input type="checkbox" class="form-check-input" id="" value="true" name="ssl_enabled">
-                      <label class="form-check-label" for="">SSL</label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="" class="form-label">SSL File Name:</label>
-                        <input type="text" class="form-control" id="" name="ssl_file_name" placeholder="for abc.sunny420x use sunny420x">
-                    </div>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i> Create Virtual Host</button>
-                </form>
-            </div>
-        </div>
         </div>
     </div>
-    <div class="modal fade" id="phpvhost" tabindex="-1" aria-labelledby="nodejsvhost" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel"><i class="fa-solid fa-plus me-2"></i> Create PHP Virtual Host.</h1>
-            <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+    <!-- PHP VHost Modal -->
+    <div class="modal fade" id="phpvhost" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content card border-0">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 p-3">
+                    <h5 class="modal-title text-white"><i class="fa-brands fa-php text-info me-2"></i> Create PHP Virtual Host</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="/createPHPVirtualHost" method="post">
+                        <h6 class="text-primary mb-3"><i class="fa-solid fa-globe me-2"></i>App Settings</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary">App name:</label>
+                                <input type="text" class="form-control" name="app_name" placeholder="my-php-app" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary">PHP Version:</label>
+                                <input type="text" class="form-control" name="php_version" placeholder="8.1" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-secondary">Server Name (Domain):</label>
+                                <input type="text" class="form-control" name="server_name" placeholder="php.example.com" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-secondary">Root Directory:</label>
+                                <input type="text" class="form-control" name="root_dir" placeholder="/var/www/html/my-app" required>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary my-3"><i class="fa-solid fa-shield-halved me-2"></i>SSL Settings</h6>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input bg-dark border-secondary" value="true" name="ssl_enabled" id="php_ssl">
+                            <label class="form-check-label small text-secondary" for="php_ssl">Enable SSL</label>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary">SSL File Name:</label>
+                            <input type="text" class="form-control" name="ssl_file_name" placeholder="e.g. example_com">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa-solid fa-plus me-2"></i> Create Virtual Host</button>
+                    </form>
+                </div>
             </div>
-            <div class="modal-body">
-                <form action="/createPHPVirtualHost" method="post">
-                    <h4 class="mb-3"><i class="fa-solid fa-globe me-2"></i> App Settings:</h4>
-                    <div class="mb-3">
-                      <label for="" class="form-label">App name: </label>
-                      <input type="text" class="form-control" id="" name="app_name" placeholder="abc" required>
-                    </div>
-                    <div class="mb-3">
-                      <label for="" class="form-label">Server Name (Domain Name):</label>
-                      <input type="text" class="form-control" id="" name="server_name" placeholder="abc.sunny420x.com" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="" class="form-label">Root Directory:</label>
-                        <input type="text" class="form-control" id="" name="root_dir" placeholder="/var/www/html/abc" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="" class="form-label">PHP version:</label>
-                        <input type="text" class="form-control" id="" name="php_version" placeholder="8.1" required>
-                    </div>
-                    <h4 class="my-4"><i class="fa-solid fa-key me-2"></i> SSL Settings:</h4>
-                    <div class="mb-3 form-check">
-                      <input type="checkbox" class="form-check-input" id="" value="true" name="ssl_enabled">
-                      <label class="form-check-label" for="">SSL</label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="" class="form-label">SSL File Name:</label>
-                        <input type="text" class="form-control" id="" name="ssl_file_name" placeholder="for abc.sunny420x use sunny420x">
-                    </div>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i> Create Virtual Host</button>
-                </form>
-            </div>
-        </div>
         </div>
     </div>
+
+    <!-- Scripts Operations -->
     <script>
+        const swalConfig = {
+            background: '#161b22',
+            color: '#fff',
+            confirmButtonColor: '#238636'
+        };
+
         function startNodeApp(name) {
             fetch('/start/node/'+name).then(res => {
-                if(!res.ok) {
-                    throw new Error('Fail to fetch.')
-                }
+                if(!res.ok) throw new Error('Fail to fetch.')
                 return res.text()
             }).then(data => {
-                Swal.fire({
-                    title: data,
-                    icon: 'success'
-                })
+                Swal.fire({ ...swalConfig, title: data, icon: 'success' })
                 getNodeApps()
-            }).catch(err => {
-                console.log(err)
-            })
+            }).catch(err => console.log(err))
         }
 
         function stopNodeApp(name) {
             fetch('/stop/node/'+name).then(res => {
-                if(!res.ok) {
-                    throw new Error('Fail to fetch.')
-                }
+                if(!res.ok) throw new Error('Fail to fetch.')
                 return res.text()
             }).then(data => {
-                Swal.fire({
-                    title: data,
-                    icon: 'success'
-                })
+                Swal.fire({ ...swalConfig, title: data, icon: 'success' })
                 getNodeApps()
-            }).catch(err => {
-                console.log(err)
-            })
+            }).catch(err => console.log(err))
         }
 
         function restartNodeApp(name) {
             fetch('/restart/node/'+name).then(res => {
-                if(!res.ok) {
-                    throw new Error('Fail to fetch.')
-                }
+                if(!res.ok) throw new Error('Fail to fetch.')
                 return res.text()
             }).then(data => {
-                Swal.fire({
-                    title: data,
-                    icon: 'success'
-                })
+                Swal.fire({ ...swalConfig, title: data, icon: 'success' })
                 getNodeApps()
-            }).catch(err => {
-                console.log(err)
-            })
+            }).catch(err => console.log(err))
         }
 
         function pm2Save() {
             fetch('/pm2/save').then(res => {
-                if(!res.ok) {
-                    throw new Error('Fail to fetch.')
-                }
+                if(!res.ok) throw new Error('Fail to fetch.')
                 return res.text()
             }).then(data => {
-                Swal.fire({
-                    title: data,
-                    icon: 'success'
-                })
-            }).catch(err => {
-                console.log(err)
-            })
+                Swal.fire({ ...swalConfig, title: data, icon: 'success' })
+            }).catch(err => console.log(err))
         }
     </script>
+
     <%-include('include/footer')%>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
