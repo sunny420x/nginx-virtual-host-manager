@@ -5,12 +5,11 @@ const ejs = require('ejs')
 const cookieParser = require('cookie-parser')
 var exec = require('child_process').exec;
 require('dotenv').config()
-const path = require('path');
 
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }))
 app.set('view engine', 'ejs')
-app.use(express.static(path.join(__dirname, 'assets')));
+app.use(express.static(require('path').join(__dirname, 'assets')));
 
 const username = process.env.USERNAME
 const password = process.env.PASSWORD
