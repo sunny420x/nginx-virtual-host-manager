@@ -120,15 +120,36 @@ app.get('/getNodeApps', async (req, res) => {
         const formatUptime = (value) => {
             if (value === undefined || value === null || value === '') return 'N/A'
 
+            // PM2 sometimes provides a timestamp (ms since epoch) or a duration (ms).
+            // If the number looks like a timestamp (> ~1e12), compute duration from now.
+            let durationMs = 0
             if (typeof value === 'number') {
-                const totalSeconds = Math.max(0, Math.floor(value / 1000))
-                const hours = Math.floor(totalSeconds / 3600)
-                const minutes = Math.floor((totalSeconds % 3600) / 60)
-                const seconds = totalSeconds % 60
-                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+                if (value > 1e12) {
+                    durationMs = Date.now() - value
+                    if (durationMs < 0) durationMs = 0
+                } else {
+                    durationMs = value
+                }
+            } else {
+                return String(value)
             }
 
-            return String(value)
+            const totalSeconds = Math.max(0, Math.floor(durationMs / 1000))
+            const years = Math.floor(totalSeconds / 31536000)
+            const days = Math.floor((totalSeconds % 31536000) / 86400)
+            const hours = Math.floor((totalSeconds % 86400) / 3600)
+            const minutes = Math.floor((totalSeconds % 3600) / 60)
+            const seconds = totalSeconds % 60
+
+            const parts = []
+            if (years) parts.push(`${years}y`)
+            if (days) parts.push(`${days}d`)
+            if (hours) parts.push(`${hours}h`)
+            if (minutes) parts.push(`${minutes}m`)
+            // show seconds only when uptime is below 1 minute
+            if (!years && !days && !hours && !minutes) parts.push(`${seconds}s`)
+
+            return parts.join(' ')
         }
 
         const nodeapps = apps.map((app) => app.name || '').filter(Boolean)

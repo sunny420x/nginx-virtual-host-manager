@@ -230,6 +230,15 @@
 
         <!-- Applications & Virtual Hosts Grid -->
         <div class="row g-4 mb-4">
+            <!-- Web Root Browser -->
+            <div class="col-lg-12">
+                <div class="card h-100 p-4">
+                    <div id="WebRootBrowser">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Virtual Hosts List -->
             <div class="col-lg-6">
                 <div class="card h-100 p-4" id="VirtualHostsList">
@@ -259,14 +268,6 @@
                 </div>
             </div>
 
-            <!-- Web Root Browser -->
-            <div class="col-lg-6">
-                <div class="card h-100 p-4">
-                    <div id="WebRootBrowser">
-                        <div class="loader"></div>
-                    </div>
-                </div>
-            </div>
             <script>
                 function getNodeApps() {
                     fetch('/getNodeApps').then(res => {
