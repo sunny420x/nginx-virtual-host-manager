@@ -125,16 +125,16 @@
 <body>
 
     <!-- Back Button / Header Navigation -->
-    <div class="top-bar text-white d-flex align-items-center" onclick="window.location.href='/'" style="cursor: pointer;">
+    <div class="top-bar text-white d-flex align-items-center" onclick="window.location.href='<%= backUrl || '/' %>'" style="cursor: pointer;">
         <i class="fa-solid fa-arrow-left me-3 text-secondary"></i>
-        <span class="text-secondary small me-2">Virtual Hosts /</span>
+        <span class="text-secondary small me-2">Files /</span>
         <span class="fw-medium text-white"><%=name%></span>
     </div>
 
     <!-- Main Container -->
     <div class="container my-4 flex-grow-1">
         <form action="/update_file" method="post" onsubmit="updateContent()">
-            <input type="hidden" name="file_name" value="<%=name%>">
+            <input type="hidden" name="file_name" value="<%= filePath || name %>">
             
             <!-- Code Editor Window -->
             <div class="editor-container mb-3">

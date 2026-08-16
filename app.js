@@ -1,4 +1,5 @@
 const fs = require('fs')
+const nodePath = require('path')
 const express = require('express')
 const app = express()
 const cookieParser = require('cookie-parser')
@@ -13,6 +14,19 @@ app.use(express.static(require('path').join(__dirname, 'assets')));
 const username = process.env.USERNAME
 const password = process.env.PASSWORD
 const nginxPath = process.env.NGINX_PATH
+const webRootPath = process.env.WEB_ROOT || '/var/www/html'
+
+function resolveFilePath(fileName) {
+    if (!fileName) return null
+    if (fileName.startsWith('/')) return fileName
+    return `${nginxPath}${fileName}`
+}
+
+function isPathAllowed(filePath) {
+    if (!filePath) return false
+    const normalized = nodePath.resolve(filePath)
+    return normalized.startsWith(nodePath.resolve(nginxPath)) || normalized.startsWith(nodePath.resolve(webRootPath))
+}
 
 function checkAdmin(req) {
     return new Promise((resolve) => {
@@ -136,6 +150,89 @@ app.get('/getNodeApps', async (req, res) => {
             nodeapps_uptime,
             nodeapps_status,
             nodeapps_mem,
+        })
+    })
+})
+
+app.get('/browse', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    const requestedPath = req.query.path ? decodeURIComponent(req.query.path) : webRootPath
+    const basePath = nodePath.resolve(requestedPath)
+    const rootBase = nodePath.resolve(webRootPath)
+    const safePath = basePath.startsWith(rootBase) ? basePath : rootBase
+
+    fs.readdir(safePath, { withFileTypes: true }, (err, entries) => {
+        if (err) {
+            console.error(err)
+            return res.status(500).send('Unable to read directory.')
+        }
+
+        const items = entries
+            .map((entry) => {
+                const itemPath = nodePath.join(safePath, entry.name)
+                const isDirectory = entry.isDirectory()
+                return {
+                    name: entry.name,
+                    path: itemPath,
+                    isDirectory,
+                    isFile: entry.isFile(),
+                    icon: isDirectory ? 'fa-folder' : 'fa-file-lines',
+                }
+            })
+            .sort((a, b) => Number(b.isDirectory) - Number(a.isDirectory) || a.name.localeCompare(b.name))
+
+        const parentPath = nodePath.dirname(safePath)
+        const currentPath = safePath
+        const canGoUp = currentPath !== rootBase
+
+        return res.render('components/webroot_browser', {
+            items,
+            currentPath,
+            parentPath,
+            canGoUp,
+            rootBase,
+        })
+    })
+})
+
+app.get('/getWebRootBrowser', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+    const requestedPath = req.query.path ? decodeURIComponent(req.query.path) : webRootPath
+    const rootBase = nodePath.resolve(webRootPath)
+    const resolvedPath = nodePath.resolve(requestedPath)
+    const safePath = resolvedPath.startsWith(rootBase) ? resolvedPath : rootBase
+
+    fs.readdir(safePath, { withFileTypes: true }, (err, entries) => {
+        if (err) {
+            console.error(err)
+            return res.status(500).send('Unable to read directory.')
+        }
+
+        const items = entries
+            .map((entry) => {
+                const itemPath = nodePath.join(safePath, entry.name)
+                const isDirectory = entry.isDirectory()
+                return {
+                    name: entry.name,
+                    path: itemPath,
+                    isDirectory,
+                    isFile: entry.isFile(),
+                    icon: isDirectory ? 'fa-folder' : 'fa-file-lines',
+                }
+            })
+            .sort((a, b) => Number(b.isDirectory) - Number(a.isDirectory) || a.name.localeCompare(b.name))
+
+        const parentPath = nodePath.dirname(safePath)
+        const currentPath = safePath
+        const canGoUp = currentPath !== rootBase
+
+        return res.render('components/webroot_browser', {
+            items,
+            currentPath,
+            parentPath,
+            canGoUp,
+            rootBase,
         })
     })
 })
@@ -268,7 +365,8 @@ app.get('/delete/:file_name', async (req, res) => {
 app.get('/view/:file_name', async (req, res) => {
     if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
 
-    fs.readFile(`${nginxPath}${req.params.file_name}`, 'utf8', (err, data) => {
+    const resolvedPath = resolveFilePath(req.params.file_name)
+    fs.readFile(resolvedPath, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading file:', err)
             return res.status(500).send('Error reading file.')
@@ -277,6 +375,31 @@ app.get('/view/:file_name', async (req, res) => {
         res.render('view', {
             content: data,
             name: req.params.file_name,
+            backUrl: '/',
+        })
+    })
+})
+
+app.get('/view-file', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    const requestedFile = req.query.path ? decodeURIComponent(req.query.path) : ''
+    if (!requestedFile || !isPathAllowed(requestedFile)) {
+        return res.status(400).send('Invalid file path.')
+    }
+
+    fs.readFile(requestedFile, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading file:', err)
+            return res.status(500).send('Error reading file.')
+        }
+
+        const parentDir = nodePath.dirname(requestedFile)
+        res.render('view', {
+            content: data,
+            name: nodePath.basename(requestedFile),
+            filePath: requestedFile,
+            backUrl: `/browse?path=${encodeURIComponent(parentDir)}`,
         })
     })
 })
@@ -286,9 +409,17 @@ app.post('/update_file', async (req, res) => {
 
     const file_name = req.body.file_name
     const content = req.body.content
-    fs.writeFile(`${nginxPath}${file_name}`, content, (err) => {
+    const targetFile = file_name && file_name.startsWith('/') ? file_name : resolveFilePath(file_name)
+
+    if (!targetFile || !isPathAllowed(targetFile)) {
+        return res.status(400).send('Invalid file path.')
+    }
+
+    fs.writeFile(targetFile, content, (err) => {
         if (err) {
             console.error('Error appending to file:', err)
+        } else if (file_name && file_name.startsWith('/')) {
+            res.redirect(`/browse?path=${encodeURIComponent(nodePath.dirname(targetFile))}`)
         } else {
             res.redirect('/view/' + file_name)
         }

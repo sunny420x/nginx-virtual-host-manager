@@ -258,6 +258,15 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Web Root Browser -->
+            <div class="col-lg-6">
+                <div class="card h-100 p-4">
+                    <div id="WebRootBrowser">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
             <script>
                 function getNodeApps() {
                     fetch('/getNodeApps').then(res => {
@@ -269,7 +278,25 @@
                         console.log(err)
                     })
                 }
+
+                function browseWebRoot(path) {
+                    const safePath = path || '/var/www/html'
+                    fetch('/getWebRootBrowser?path=' + encodeURIComponent(safePath)).then(res => {
+                        if(!res.ok) throw new Error('Fail to fetch.')
+                        return res.text()
+                    }).then(data => {
+                        document.getElementById('WebRootBrowser').innerHTML = data
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                }
+
+                function openWebFile(path) {
+                    window.location.href = '/view-file?path=' + encodeURIComponent(path)
+                }
+
                 getNodeApps()
+                browseWebRoot('/var/www/html')
             </script>
         </div>
     </div>
