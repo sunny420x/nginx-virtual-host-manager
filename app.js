@@ -103,10 +103,24 @@ app.get('/getNodeApps', async (req, res) => {
             return res.status(500).send('Unable to parse PM2 apps.')
         }
 
+        const formatUptime = (value) => {
+            if (value === undefined || value === null || value === '') return 'N/A'
+
+            if (typeof value === 'number') {
+                const totalSeconds = Math.max(0, Math.floor(value / 1000))
+                const hours = Math.floor(totalSeconds / 3600)
+                const minutes = Math.floor((totalSeconds % 3600) / 60)
+                const seconds = totalSeconds % 60
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+            }
+
+            return String(value)
+        }
+
         const nodeapps = apps.map((app) => app.name || '').filter(Boolean)
         const nodeapps_uptime = apps.map((app) => {
-            if (app.pm2_env && app.pm2_env.ax) return app.pm2_env.ax
-            return app.ax || 'N/A'
+            const uptimeValue = app.pm2_env?.pm_uptime ?? app.pm_uptime ?? app.pm2_env?.ax ?? app.ax
+            return formatUptime(uptimeValue)
         })
         const nodeapps_status = apps.map((app) => {
             if (app.pm2_env && app.pm2_env.status) return app.pm2_env.status
