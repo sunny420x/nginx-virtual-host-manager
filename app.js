@@ -421,7 +421,7 @@ app.get('/view-file', async (req, res) => {
             content: data,
             name: nodePath.basename(requestedFile),
             filePath: requestedFile,
-            backUrl: `/browse?path=${encodeURIComponent(parentDir)}`,
+            backUrl: '/',
         })
     })
 })
