@@ -205,40 +205,45 @@
             </div>
         </div>
 
-        <!-- Used Ports Section -->
-        <div class="card mb-4">
-            <div class="card-header p-3">
-                <h5 class="m-0 fw-bold"><i class="fa-solid fa-network-wired me-2 text-warning"></i>Used Ports</h5>
-            </div>
-            <div class="card-body p-4" id="used_ports">
-                <div class="loader"></div>
-            </div>
-            <script>
-                function getUsedPorts() {
-                    fetch('/getUsedPorts').then(res => {
-                        if(!res.ok) throw new Error('Fail to fetch.')
-                        return res.text()
-                    }).then(data => {
-                        document.getElementById('used_ports').innerHTML = data
-                    }).catch(err => {
-                        alert(err)
-                    })
-                }
-                getUsedPorts()
-            </script>
-        </div>
-
-        <!-- Applications & Virtual Hosts Grid -->
         <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <!-- Used Ports Section -->
+                <div class="card h-100 p-4">
+                    <div class="card-header p-3">
+                        <h5 class="m-0 fw-bold"><i class="fa-solid fa-network-wired me-2 text-warning"></i>Used Ports</h5>
+                    </div>
+                    <div class="card-body p-4" id="used_ports">
+                        <div class="loader"></div>
+                    </div>
+                    <script>
+                        function getUsedPorts() {
+                            fetch('/getUsedPorts').then(res => {
+                                if(!res.ok) throw new Error('Fail to fetch.')
+                                return res.text()
+                            }).then(data => {
+                                document.getElementById('used_ports').innerHTML = data
+                            }).catch(err => {
+                                alert(err)
+                            })
+                        }
+                        getUsedPorts()
+                    </script>
+                </div>
+            </div>
+
             <!-- Web Root Browser -->
-            <div class="col-lg-12">
+            <div class="col-lg-7">
                 <div class="card h-100 p-4">
                     <div id="WebRootBrowser">
                         <div class="loader"></div>
                     </div>
                 </div>
             </div>
-            
+        </div>
+
+        <!-- Applications & Virtual Hosts Grid -->
+        <div class="row g-4 mb-4">
+
             <!-- Virtual Hosts List -->
             <div class="col-lg-6">
                 <div class="card h-100 p-4" id="VirtualHostsList">
