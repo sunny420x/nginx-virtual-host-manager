@@ -396,6 +396,7 @@ app.get('/view/:file_name', async (req, res) => {
         res.render('view', {
             content: data,
             name: req.params.file_name,
+            filePath: resolvedPath,
             backUrl: '/',
         })
     })
