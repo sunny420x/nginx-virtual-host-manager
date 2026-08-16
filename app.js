@@ -441,7 +441,15 @@ app.post('/update_file', async (req, res) => {
         if (err) {
             console.error('Error appending to file:', err)
         } else if (file_name && file_name.startsWith('/')) {
-            res.redirect(`/browse?path=${encodeURIComponent(nodePath.dirname(targetFile))}`)
+            // If the saved file is under nginxPath, redirect back to the logical /view/:file_name
+            if (targetFile.startsWith(nginxPath)) {
+                let rel = targetFile.slice(nginxPath.length)
+                if (rel.startsWith('/')) rel = rel.slice(1)
+                return res.redirect('/view/' + rel)
+            }
+
+            // Otherwise redirect to the file viewer route for absolute paths
+            return res.redirect('/view-file?path=' + encodeURIComponent(targetFile))
         } else {
             res.redirect('/view/' + file_name)
         }
