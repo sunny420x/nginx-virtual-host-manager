@@ -1,40 +1,36 @@
-<% i = 0 %>
-<h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%=nodeapps.length%> totals) <button class="btn btn-dark" onclick="pm2Save()"><i class="fa-solid fa-floppy-disk"></i></button></h3>
+<% let i = 0 %>
+<h3 class="mb-3"><i class="fa-solid fa-list me-2"></i> Node.js Apps Lists (<%= nodeapps.length %> totals) <button class="btn btn-dark" onclick="pm2Save()"><i class="fa-solid fa-floppy-disk"></i></button></h3>
 <div class="table-responsive">
     <table class="table table-dark">
         <tr>
             <th>Status</th>
             <th>Name</th>
-            <th>Uptime</th>
-            <th>Memory</th>
-            <th style="width: 150px;">Action</th>
+            <th class="text-center">Uptime</th>
+            <th class="text-center">Memory</th>
+            <th style="width: 120px;" class="text-center">Action</th>
         </tr>
-        <%nodeapps.forEach((name) => {%>
+        <% nodeapps.forEach((name) => { const status = (nodeapps_status[i] || '').trim().toLowerCase(); %>
             <tr>
                 <td class="text-center">
-                    <% switch (nodeapps_status[i].trim()) { 
-                        case "online": %>
-                            <span class="text-success">⬤</span>
-                        <% break; 
-                        case "stopped": %>
-                            <span class="text-secondary">⬤</span>
-                        <% break; 
-                        case "error": %>
-                            <span class="text-danger">⬤</span>
-                        <% break; 
-                    } %>
+                    <% if (status === 'online') { %>
+                        <span class="text-success">⬤</span>
+                    <% } else if (status === 'stopped' || status === 'stopping') { %>
+                        <span class="text-secondary">⬤</span>
+                    <% } else if (status === 'error') { %>
+                        <span class="text-danger">⬤</span>
+                    <% } else { %>
+                        <span class="text-warning">⬤</span>
+                    <% } %>
                 </td>
-                <td><%=name%></td>
-                <td><%=nodeapps_uptime[i]%></td>
-                <td><%=nodeapps_mem[i]%></td>
+                <td><%= name %></td>
+                <td><%= nodeapps_uptime[i] || 'N/A' %></td>
+                <td><%= nodeapps_mem[i] || 'N/A' %></td>
                 <td>
-                    <button class="btn btn-success btn-sm" onclick="startNodeApp('<%=name%>')"><i class="fa-solid fa-play"></i></button>
-                    <button class="btn btn-primary btn-sm" onclick="restartNodeApp('<%=name%>')"><i class="fa-solid fa-arrows-rotate"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="stopNodeApp('<%=name%>')"><i class="fa-solid fa-stop"></i></button>
+                    <button class="btn btn-success btn-sm" onclick="startNodeApp('<%= name %>')"><i class="fa-solid fa-play"></i></button>
+                    <button class="btn btn-primary btn-sm" onclick="restartNodeApp('<%= name %>')"><i class="fa-solid fa-arrows-rotate"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="stopNodeApp('<%= name %>')"><i class="fa-solid fa-stop"></i></button>
                 </td>
             </tr>
-        <%
-        i++
-        })%>
+        <% i++; }) %>
     </table>
 </div>

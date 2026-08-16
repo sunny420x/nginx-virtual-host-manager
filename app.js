@@ -1,9 +1,8 @@
 const fs = require('fs')
 const express = require('express')
 const app = express()
-const ejs = require('ejs')
 const cookieParser = require('cookie-parser')
-var exec = require('child_process').exec;
+const { exec } = require('child_process')
 require('dotenv').config()
 
 app.use(cookieParser())
@@ -12,410 +11,372 @@ app.set('view engine', 'ejs')
 
 const username = process.env.USERNAME
 const password = process.env.PASSWORD
-const path =  process.env.NGINX_PATH
+const nginxPath = process.env.NGINX_PATH
 
 function checkAdmin(req) {
-    return new Promise(resolve => {
-        if(req.cookies.token != undefined) {
-            if(req.cookies.token.split(':')[0] == username && atob(req.cookies.token.split(':')[1]) == password) {
-                resolve(true)
-            } else {
-                resolve(false)
-            }
-        } else {
-            resolve(false)
+    return new Promise((resolve) => {
+        const token = req.cookies && req.cookies.token
+        if (!token) return resolve(false)
+
+        const tokenParts = token.split(':')
+        if (tokenParts.length < 2) return resolve(false)
+
+        const [cookieUser, encodedPassword] = tokenParts
+        if (cookieUser === username && encodedPassword && atob(encodedPassword) === password) {
+            return resolve(true)
         }
+
+        return resolve(false)
     })
 }
 
-app.post('/login', (req,res) => {
-    if(req.body.username == username && req.body.password == password) {
+function safeStringArray(value) {
+    if (!value || typeof value !== 'string') return []
+    return value
+        .split(/\r?\n/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+}
+
+app.post('/login', (req, res) => {
+    if (req.body.username === username && req.body.password === password) {
         res.cookie('token', `${username}:${btoa(password)}`)
-        res.redirect('/')
-    } else {
-        res.redirect('/login')
+        return res.redirect('/')
     }
+
+    return res.redirect('/login')
 })
 
-app.get('/logout',(req,res) => {
+app.get('/logout', (req, res) => {
     res.cookie('token', '')
     res.redirect('/')
 })
 
-app.get('/', (req, res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            if(req.query.alert != undefined) {
-                res.render('main', {
-                    alert: req.query.alert,
-                })   
-            } else {
-                res.render('main')   
-            }
-        } else {
-            res.redirect("/login")
-        }
+app.get('/', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.redirect('/login')
+
+    if (req.query.alert !== undefined) {
+        return res.render('main', { alert: req.query.alert })
+    }
+
+    return res.render('main')
+})
+
+app.get('/getVirtualHostsList', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    fs.readdir(nginxPath, (err, files) => {
+        if (err) console.log(err)
+        res.render('components/virtualhosts', { files })
     })
 })
 
-app.get('/getVirtualHostsList', (req, res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            fs.readdir(path, (err, files) => {
-                if(err) console.log(err);
-                res.render('components/virtualhosts', {
-                    files:files,
-                })
-            })
-        } else {
-            res.status(401).send("Please login.")
-        }
+app.get('/getUsedPorts', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    exec(`netstat -tnlp | awk '{print $4}' | grep -oE ':[0-9]+' | grep -oE '[0-9]+' | sort -n`, (err, usedPorts, stderr) => {
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
+        res.render('components/used_ports', {
+            used_ports: safeStringArray(usedPorts),
+        })
     })
 })
 
-app.get('/getUsedPorts', (req, res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            exec(`netstat -tnlp | awk '{print $4}' | grep -oE ':[0-9]+' | grep -oE '[0-9]+' | sort -n`, (err, used_ports, stderr) => {
-            if (err) console.error(err);
-            if (stderr) console.error(stderr);
-                used_ports = used_ports.trim().split('\n')
-                res.render('components/used_ports', {
-                    used_ports:used_ports,
-                })
-            })
-        } else {
-            res.status(401).send("Please login.")
+app.get('/getNodeApps', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    exec('pm2 jlist', (err, stdout, stderr) => {
+        if (err) {
+            console.error(err)
+            return res.status(500).send('Unable to fetch PM2 apps.')
         }
+
+        if (stderr) console.error(stderr)
+
+        let apps = []
+        try {
+            apps = JSON.parse(stdout || '[]')
+        } catch (parseErr) {
+            console.error('Failed to parse PM2 JSON:', parseErr)
+            return res.status(500).send('Unable to parse PM2 apps.')
+        }
+
+        const nodeapps = apps.map((app) => app.name || '').filter(Boolean)
+        const nodeapps_uptime = apps.map((app) => {
+            if (app.pm2_env && app.pm2_env.ax) return app.pm2_env.ax
+            return app.ax || 'N/A'
+        })
+        const nodeapps_status = apps.map((app) => {
+            if (app.pm2_env && app.pm2_env.status) return app.pm2_env.status
+            return app.status || 'stopped'
+        })
+        const nodeapps_mem = apps.map((app) => {
+            const memory = app.monit && app.monit.memory ? Number(app.monit.memory) : 0
+            return memory > 0 ? `${Math.round(memory / 1024 / 1024)} MB` : '0 MB'
+        })
+
+        return res.render('components/nodeapps', {
+            nodeapps,
+            nodeapps_uptime,
+            nodeapps_status,
+            nodeapps_mem,
+        })
     })
 })
 
-app.get('/getNodeApps', (req, res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            exec(`pm2 list | awk 'NR>2 {print $4}'`, (err, nodeapps, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-                nodeapps = nodeapps.trim().split('\n')
-                exec(`pm2 list | awk 'NR>2 {print $14}'`, (err, nodeapps_uptime, stderr) => {
-                    if (err) console.error(err);
-                    if (stderr) console.error(stderr);
-                    nodeapps_uptime = nodeapps_uptime.trim().split('\n')
-                    exec(`pm2 list | awk 'NR>2 {print $18}'`, (err, nodeapps_status, stderr) => {
-                        if (err) console.error(err);
-                        if (stderr) console.error(stderr);
-                        nodeapps_status = nodeapps_status.trim().split('\n')
-                        exec(`pm2 list | awk 'NR>2 {print $22}'`, (err, nodeapps_mem, stderr) => {
-                            if (err) console.error(err);
-                            if (stderr) console.error(stderr);
-                            nodeapps_mem = nodeapps_mem.trim().split('\n')
-                            res.render('components/nodeapps', {
-                                nodeapps:nodeapps,
-                                nodeapps_uptime:nodeapps_uptime,
-                                nodeapps_status:nodeapps_status,
-                                nodeapps_mem:nodeapps_mem,
-                            })   
-                        }) 
-                    })   
-                })     
-            })
-        } else {
-            res.status(401).send("Please login.")
-        }
-    })
+app.get('/login', async (req, res) => {
+    if (!(await checkAdmin(req))) {
+        return res.render('login')
+    }
+
+    return res.redirect('/')
 })
 
-app.get('/login', (req, res) => {
-    checkAdmin(req).then((result) => {
-        if(!result) {
-            res.render('login')
-        } else {
-            res.redirect('/')
-        }
-    })
+app.post('/createNodeJSVirtualHost', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    const app_name = req.body.app_name
+    const server_name = req.body.server_name
+    const app_path = req.body.app_path
+    const ssl_file_name = req.body.ssl_file_name ?? ''
+    const port = req.body.port
+    const ssl_enabled = req.body.ssl_enabled ?? false
+    const folders = req.body.folders && req.body.folders !== '' ? req.body.folders.split(',') : []
+
+    const status = await createNodeJSVirtualHost(app_name, server_name, app_path, ssl_file_name, port, ssl_enabled, folders)
+    if (status === true) {
+        return res.redirect(`/?alert=Created ${app_name} success.`)
+    }
+
+    return res.redirect('/?alert=Error.')
 })
 
-app.post('/createNodeJSVirtualHost', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            const app_name = req.body.app_name
-            const server_name = req.body.server_name
-            const app_path = req.body.app_path
-            const ssl_file_name = req.body.ssl_file_name ?? ""
-            const port = req.body.port
-            const ssl_enabled = req.body.ssl_enabled ?? false
-            if(req.body.folders != "") {
-                folders = req.body.folders.split(',')
-            } else {
-                folders = []
-            }
-        
-            createNodeJSVirtualHost(app_name, server_name, app_path, ssl_file_name, port, ssl_enabled, folders).then((status) => {
-                if(status == true) {
-                    res.redirect(`/?alert=Created ${app_name} success.`)
-                } else {
-                    res.redirect(`/?alert=Error.`)
-                }
-            })
-        }
-    })
-})
+app.post('/createPHPVirtualHost', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
 
-app.post('/createPHPVirtualHost', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            const app_name = req.body.app_name
-            const server_name = req.body.server_name
-            const root_dir = req.body.root_dir
-            const php_version = req.body.php_version
-            const ssl_file_name = req.body.ssl_file_name ?? ""
-            const ssl_enabled = req.body.ssl_enabled ?? false
-        
-            createPHPVirtualHost(app_name, server_name, ssl_file_name, ssl_enabled, root_dir, php_version).then((status) => {
-                if(status == true) {
-                    res.redirect(`/?alert=Created ${app_name} success.`)
-                } else {
-                    res.redirect(`/?alert=Error.`)
-                }
-            })
-        }
-    })
+    const app_name = req.body.app_name
+    const server_name = req.body.server_name
+    const root_dir = req.body.root_dir
+    const php_version = req.body.php_version
+    const ssl_file_name = req.body.ssl_file_name ?? ''
+    const ssl_enabled = req.body.ssl_enabled ?? false
+
+    const status = await createPHPVirtualHost(app_name, server_name, ssl_file_name, ssl_enabled, root_dir, php_version)
+    if (status === true) {
+        return res.redirect(`/?alert=Created ${app_name} success.`)
+    }
+
+    return res.redirect('/?alert=Error.')
 })
 
 function createPHPVirtualHost(app_name, server_name, ssl_file_name, ssl_enabled, root_dir, php_version) {
     return new Promise((resolve) => {
-        template = `server {`
+        let template = 'server {'
 
-        if(ssl_enabled) {
-            template += `\n\tlisten 443 ssl;\n\tlisten [::]:443 ssl;`
+        if (ssl_enabled) {
+            template += '\n\tlisten 443 ssl;\n\tlisten [::]:443 ssl;'
         } else {
-            template += `\n\tlisten 80;\n\tlisten [::]:80;`
+            template += '\n\tlisten 80;\n\tlisten [::]:80;'
         }
-    
+
         template += `\n\n\tserver_name ${server_name};`
-        template += `\n\n\tindex index.php index.html index.htm;`
+        template += '\n\n\tindex index.php index.html index.htm;'
         template += `\n\n\troot ${root_dir};`
-    
-        if(ssl_enabled) {
+
+        if (ssl_enabled) {
             template += `\n\tssl_certificate /etc/nginx/ssl/${ssl_file_name}.crt;\n\tssl_certificate_key /etc/nginx/ssl/${ssl_file_name}.key;`
         }
-    
+
         template += `\n\taccess_log /var/log/nginx/${app_name}-access.log;\n\terror_log /var/log/nginx/${app_name}-error.log;\n`
-
-        template += `\n\tlocation / {\n\t\ttry_files $uri $uri/ =404;\n\t}\n`
-
+        template += '\n\tlocation / {\n\t\ttry_files $uri $uri/ =404;\n\t}\n'
         template += `\n\tlocation ~ \.php$ {\n\t\tinclude snippets/fastcgi-php.conf;\n\t\tfastcgi_pass unix:/run/php/php${php_version}-fpm.sock;\n\t}`
-    
-        template += `\n}`
-    
-        fs.writeFile(`${path}/${app_name}`, template, err => {
-            if(err) console.log(err)
-            resolve(true)
+        template += '\n}'
+
+        fs.writeFile(`${nginxPath}/${app_name}`, template, (err) => {
+            if (err) console.log(err)
+            return resolve(true)
         })
     })
 }
 
 function createNodeJSVirtualHost(app_name, server_name, app_path, ssl_file_name, port, ssl_enabled, folders) {
     return new Promise((resolve) => {
-        template = `server {`
+        let template = 'server {'
 
-        if(ssl_enabled) {
-            template += `\n\tlisten 443 ssl;\n\tlisten [::]:443 ssl;`
+        if (ssl_enabled) {
+            template += '\n\tlisten 443 ssl;\n\tlisten [::]:443 ssl;'
         } else {
-            template += `\n\tlisten 80;\n\tlisten [::]:80;`
+            template += '\n\tlisten 80;\n\tlisten [::]:80;'
         }
-    
+
         template += `\n\n\tserver_name ${server_name};`
-    
-        if(ssl_enabled) {
-            template += `\n\tssl_certificate /etc/nginx/ssl/${ssl_file_name}.crt;\n\tssl_certificate_key /etc/nginx/sll/${ssl_file_name}.key;`
+
+        if (ssl_enabled) {
+            template += `\n\tssl_certificate /etc/nginx/ssl/${ssl_file_name}.crt;\n\tssl_certificate_key /etc/nginx/ssl/${ssl_file_name}.key;`
         }
-    
-        template += `\n\tproxy_connect_timeout 3;\n\tproxy_send_timeout 3;\n\tproxy_read_timeout 3;\n\tsend_timeout 3;
-        `
-    
-        template += `\n\taccess_log /var/log/nginx/${app_name}-access.log;\n\terror_log /var/log/nginx/${app_name}-error.log;
-        `
-    
+
+        template += '\n\tproxy_connect_timeout 3;\n\tproxy_send_timeout 3;\n\tproxy_read_timeout 3;\n\tsend_timeout 3;'
+        template += `\n\taccess_log /var/log/nginx/${app_name}-access.log;\n\terror_log /var/log/nginx/${app_name}-error.log;`
         template += `\n\tlocation / {\n\t\tproxy_pass http://localhost:${port};\n\t`
 
-        if(ssl_enabled) {
-            template += `\tproxy_ssl_server_name on;\n\t}`
+        if (ssl_enabled) {
+            template += 'proxy_ssl_server_name on;\n\t}'
         } else {
-            template += `}`
+            template += '}'
         }
-    
-        if(folders.length > 0) {
-            for(i = 0; i < folders.length; i++) {
+
+        if (folders.length > 0) {
+            for (let i = 0; i < folders.length; i++) {
                 template += `\n\tlocation /${folders[i]}/ {\n\t\talias ${app_path}/public/${folders[i]}/;\n\t}`
             }
         }
-        template += `\n}`
-    
-        fs.writeFile(`${path}/${app_name}`, template, err => {
-            if(err) console.log(err)
-            resolve(true)
+
+        template += '\n}'
+
+        fs.writeFile(`${nginxPath}/${app_name}`, template, (err) => {
+            if (err) console.log(err)
+            return resolve(true)
         })
     })
 }
 
-app.get('/delete/:file_name', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            fs.unlink(path+req.params.file_name,function(err){
-                if(err) console.log(err)
-                res.redirect('/?alert=Delete Success.')
-            });  
+app.get('/delete/:file_name', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    fs.unlink(`${nginxPath}${req.params.file_name}`, (err) => {
+        if (err) console.log(err)
+        res.redirect('/?alert=Delete Success.')
+    })
+})
+
+app.get('/view/:file_name', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    fs.readFile(`${nginxPath}${req.params.file_name}`, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading file:', err)
+            return res.status(500).send('Error reading file.')
+        }
+
+        res.render('view', {
+            content: data,
+            name: req.params.file_name,
+        })
+    })
+})
+
+app.post('/update_file', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    const file_name = req.body.file_name
+    const content = req.body.content
+    fs.writeFile(`${nginxPath}${file_name}`, content, (err) => {
+        if (err) {
+            console.error('Error appending to file:', err)
+        } else {
+            res.redirect('/view/' + file_name)
         }
     })
 })
 
-app.get('/view/:file_name', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            fs.readFile(path+req.params.file_name, 'utf8', (err, data) => {
-                if (err) {
-                    console.error('Error reading file:', err);
-                    return;
-                }
-                res.render('view',{
-                    content: data,
-                    name: req.params.file_name
-                })
-            });
-        }
+app.get('/restart', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    res.redirect('/')
+    exec('systemctl restart nginx', (err, stdout, stderr) => {
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
     })
 })
 
-app.post('/update_file', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            file_name = req.body.file_name
-            content = req.body.content
-            fs.writeFile(path+file_name, content, (err) => {
-                if (err) {
-                    console.error('Error appending to file:', err);
-                } else {
-                    res.redirect('/view/'+file_name)
-                }
-            });
-        }
+app.get('/stop', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    res.redirect('/')
+    exec('systemctl stop nginx', (err, stdout, stderr) => {
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
     })
 })
 
-app.get('/restart', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            res.redirect('/')
-            exec('systemctl restart nginx', (err, stdout, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-            });
-        }
+app.get('/getMemoryStat', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    exec("free -h | awk '/^Mem:/ {print $7}'", (err, stdout, stderr) => {
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
+        res.send(`<b>Available Memory:</b> ${stdout}</pre>`)
     })
 })
 
-app.get('/stop', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            res.redirect('/')
-            exec('systemctl stop nginx', (err, stdout, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-            });
-        }
+app.get('/getUptime', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    exec("uptime -p | sed 's/up //'", (err, stdout, stderr) => {
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
+        res.send(`<b>Uptime</b>: ${stdout}`)
     })
 })
 
-app.get('/getMemoryStat', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            exec("free -h | awk '/^Mem:/ {print $7}'", (err, stdout, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-                res.send(`<b>Available Memory:</b> ${stdout}</pre>`)
-            });
-        }
+app.get('/getCPUusage', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    exec(`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}'`, (err, stdout, stderr) => {
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
+        res.send(`<b>CPU Usage:</b> ${stdout}`)
     })
 })
 
-app.get('/getUptime', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            exec(`uptime -p | sed 's/up //'`, (err, stdout, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-                res.send(`<b>Uptime</b>: ${stdout}`)
-            });
+app.get('/restart/node/:name', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    const name = req.params.name
+    exec(`pm2 restart ${name}`, (err) => {
+        if (err) {
+            return res.status(500).send(err)
         }
+        return res.status(200).send(`Restarted ${name} !`)
     })
 })
 
-app.get('/getCPUusage', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            exec(`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}'`, (err, stdout, stderr) => {
-                if (err) console.error(err);
-                if (stderr) console.error(stderr);
-                res.send(`<b>CPU Usage:</b> ${stdout}`)
-            });
+app.get('/start/node/:name', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    const name = req.params.name
+    exec(`pm2 start ${name}`, (err) => {
+        if (err) {
+            return res.status(500).send(err)
         }
+        return res.status(200).send(`Started ${name} !`)
     })
 })
 
-app.get('/restart/node/:name', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            const name = req.params.name
-            exec(`pm2 restart ${name}`, (err, stdout) => {
-                if (err) {
-                    res.status(500).send(err);
-                }
-                res.status(200).send(`Restarted ${name} !`)
-            });
+app.get('/stop/node/:name', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    const name = req.params.name
+    exec(`pm2 stop ${name}`, (err) => {
+        if (err) {
+            return res.status(500).send(err)
         }
+        return res.status(200).send(`Stopped ${name} !`)
     })
 })
 
-app.get('/start/node/:name', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            const name = req.params.name
-            exec(`pm2 start ${name}`, (err, stdout) => {
-                if (err) {
-                    res.status(500).send(err);
-                }
-                res.status(200).send(`Started ${name} !`)
-            });
+app.get('/pm2/save', async (req, res) => {
+    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+
+    exec('pm2 save', (err) => {
+        if (err) {
+            return res.status(500).send(err)
         }
+        return res.status(200).send('Apps has been saved !')
     })
 })
 
-app.get('/stop/node/:name', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            const name = req.params.name
-            exec(`pm2 stop ${name}`, (err, stdout) => {
-                if (err) {
-                    res.status(500).send(err);
-                }
-                res.status(200).send(`Stopped ${name} !`)
-            });
-        }
-    })
+app.listen(process.env.PORT, () => {
+    console.log('[+] NVHM is started on ' + process.env.PORT)
 })
-
-app.get('/pm2/save', (req,res) => {
-    checkAdmin(req).then((result) => {
-        if(result) {
-            exec(`pm2 save`, (err, stdout) => {
-                if (err) {
-                    res.status(500).send(err);
-                }
-                res.status(200).send(`Apps has been saved !`)
-            });
-        }
-    })
-})
-
-app.listen(process.env.PORT);
