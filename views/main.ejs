@@ -173,6 +173,32 @@
                                 <div class="text-secondary small mb-1"><i class="fa-regular fa-clock me-2 text-success"></i>System Uptime</div>
                                 <div class="fs-5 fw-bold text-white" id="uptime">Loading...</div>
                             </div>
+                            <div class="stat-card">
+                                <!-- Action Controls -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-sm-6">
+                                        <button class="btn btn-primary w-100 py-2 fw-medium" onclick="
+                                        fetch('/restart').then((res) => {
+                                            if(res.ok) return res.text()
+                                        }).then((data) => {
+                                            Swal.fire({
+                                                title: 'Nginx is restarting!',
+                                                icon: 'success',
+                                                background: '#161b22',
+                                                color: '#fff'
+                                            })
+                                            window.location.href = '/?alert=Restart Success.';
+                                        })">
+                                            <i class="fa-solid fa-arrows-rotate me-2"></i> Restart Web Server
+                                        </button>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <button class="btn btn-outline-danger w-100 py-2 fw-medium" onclick="if(confirm('Do you want to stop web server ?')) {window.location.href='/stop'}">
+                                            <i class="fa-solid fa-power-off me-2"></i> Stop Web Server
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -439,31 +465,6 @@
                     getSystemStat()
                     setInterval(getSystemStat, 10000)
                 </script>
-
-                <!-- Action Controls -->
-                <div class="row g-3 mb-4">
-                    <div class="col-sm-6">
-                        <button class="btn btn-primary w-100 py-2 fw-medium" onclick="
-                        fetch('/restart').then((res) => {
-                            if(res.ok) return res.text()
-                        }).then((data) => {
-                            Swal.fire({
-                                title: 'Nginx is restarting!',
-                                icon: 'success',
-                                background: '#161b22',
-                                color: '#fff'
-                            })
-                            window.location.href = '/?alert=Restart Success.';
-                        })">
-                            <i class="fa-solid fa-arrows-rotate me-2"></i> Restart Web Server
-                        </button>
-                    </div>
-                    <div class="col-sm-6">
-                        <button class="btn btn-outline-danger w-100 py-2 fw-medium" onclick="if(confirm('Do you want to stop web server ?')) {window.location.href='/stop'}">
-                            <i class="fa-solid fa-power-off me-2"></i> Stop Web Server
-                        </button>
-                    </div>
-                </div>
 
                 <!-- Create Virtual Host Actions -->
                 <div class="d-flex flex-wrap gap-2 pt-2 border-top border-secondary border-opacity-25">
