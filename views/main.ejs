@@ -332,6 +332,10 @@
                     )
         
                     function updateSystemStats() {
+                        fetch('/getUptime').then((res) => {
+                            if(res.ok) return res.text()
+                        }).then((data) => { uptime.innerHTML = data })
+                    
                         fetch('/getSystemStats')
                             .then(res => {
                                 if (!res.ok) {
