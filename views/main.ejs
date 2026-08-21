@@ -126,8 +126,20 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <div class="stat-card">
-                                <div class="text-secondary small mb-1"><i class="fa-solid fa-microchip me-2 text-info"></i>CPU Usage</div>
-                                <div class="fs-5 fw-bold text-white" id="cpuStat">Loading...</div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="text-secondary small">
+                                        <i class="fa-solid fa-microchip me-2 text-info"></i>
+                                        CPU Usage
+                                    </div>
+
+                                    <div class="fs-6 fw-bold text-white" id="cpuStat">
+                                        Loading...
+                                    </div>
+                                </div>
+
+                                <div style="height: 120px;">
+                                    <canvas id="cpuChart"></canvas>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -144,11 +156,92 @@
                         </div>
                     </div>
                 </div>
-
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script>
                     const uptime = document.getElementById('uptime')
                     const memStat = document.getElementById('memStat')
                     const cpuStat = document.getElementById('cpuStat')
+
+                    const cpuHistory = []
+                    const cpuLabels = []
+
+                    const cpuChart = new Chart(
+                        document.getElementById('cpuChart'),
+                        {
+                            type: 'line',
+
+                            data: {
+                                labels: cpuLabels,
+
+                                datasets: [{
+                                    label: 'CPU Usage',
+
+                                    data: cpuHistory,
+
+                                    borderColor: '#58a6ff',
+
+                                    backgroundColor: 'rgba(88, 166, 255, 0.10)',
+
+                                    borderWidth: 2,
+
+                                    fill: true,
+
+                                    tension: 0.4,
+
+                                    pointRadius: 2,
+
+                                    pointHoverRadius: 5
+                                }]
+                            },
+
+                            options: {
+                                responsive: true,
+
+                                maintainAspectRatio: false,
+
+                                animation: {
+                                    duration: 300
+                                },
+
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return `CPU: ${context.raw}%`
+                                            }
+                                        }
+                                    }
+                                },
+
+                                scales: {
+                                    x: {
+                                        display: false
+                                    },
+
+                                    y: {
+                                        min: 0,
+                                        max: 100,
+
+                                        ticks: {
+                                            color: '#8b949e',
+
+                                            callback: function(value) {
+                                                return value + '%'
+                                            }
+                                        },
+
+                                        grid: {
+                                            color: 'rgba(255,255,255,0.05)'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
         
                     function getSystemStat() {
                         fetch('/getUptime').then((res) => {
@@ -161,7 +254,37 @@
 
                         fetch('/getCPUusage').then((res) => {
                             if(res.ok) return res.text()
-                        }).then((data) => { cpuStat.innerHTML = data })
+                        }).then((data) => { 
+                            const cpu = parseFloat(data)
+                            if (Number.isNaN(cpu)) {
+                                throw new Error('Invalid CPU value: ' + data)
+                            }
+                            // แสดงค่าปัจจุบัน
+                            cpuStat.innerHTML = `${cpu.toFixed(1)}%`
+                            // เพิ่มค่าเข้า history
+                            cpuHistory.push(cpu)
+                            // เก็บสูงสุด 15 ค่า
+                            if (cpuHistory.length > 15) {
+                                cpuHistory.shift()
+                            }
+                            // เวลา ณ ตอนที่ได้รับค่า
+                            const now = new Date()
+                            const time = now.toLocaleTimeString('th-TH', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            })
+                            cpuLabels.push(time)
+                            // ถ้าเกิน 15 label ให้ลบตัวเก่า
+                            if (cpuLabels.length > 15) {
+                                cpuLabels.shift()
+                            }
+                            // Update Chart
+                            cpuChart.update()
+                        })
+                        .catch(err => {
+                            console.error('CPU Error:', err)
+                        })
                     }
         
                     getSystemStat()
