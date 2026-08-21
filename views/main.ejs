@@ -298,11 +298,9 @@
         .loader {
             width: 50px;
             aspect-ratio: 4;
-            --_g: no-repeat radial-gradient(
-                circle closest-side,
-                var(--accent-blue) 90%,
-                #0000
-            );
+            --_g: no-repeat radial-gradient(circle closest-side,
+                    var(--accent-blue) 90%,
+                    #0000);
 
             background:
                 var(--_g) 0% 50%,
@@ -442,11 +440,7 @@
                 Dashboard
             </div>
 
-            <button
-                class="sidebar-link active"
-                data-section="overview"
-                onclick="switchSection('overview', this)"
-            >
+            <button class="sidebar-link active" data-section="overview" onclick="switchSection('overview', this)">
                 <i class="fa-solid fa-chart-line"></i>
                 Overview
             </button>
@@ -455,20 +449,12 @@
                 Server
             </div>
 
-            <button
-                class="sidebar-link"
-                data-section="ports"
-                onclick="switchSection('ports', this)"
-            >
+            <button class="sidebar-link" data-section="ports" onclick="switchSection('ports', this)">
                 <i class="fa-solid fa-network-wired"></i>
                 Used Ports
             </button>
 
-            <button
-                class="sidebar-link"
-                data-section="webroot"
-                onclick="switchSection('webroot', this)"
-            >
+            <button class="sidebar-link" data-section="webroot" onclick="switchSection('webroot', this)">
                 <i class="fa-solid fa-folder-tree"></i>
                 Web Root
             </button>
@@ -477,20 +463,12 @@
                 Applications
             </div>
 
-            <button
-                class="sidebar-link"
-                data-section="vhosts"
-                onclick="switchSection('vhosts', this)"
-            >
+            <button class="sidebar-link" data-section="vhosts" onclick="switchSection('vhosts', this)">
                 <i class="fa-solid fa-globe"></i>
                 Virtual Hosts
             </button>
 
-            <button
-                class="sidebar-link"
-                data-section="nodeapps"
-                onclick="switchSection('nodeapps', this)"
-            >
+            <button class="sidebar-link" data-section="nodeapps" onclick="switchSection('nodeapps', this)">
                 <i class="fa-brands fa-node-js"></i>
                 Node.js Apps
             </button>
@@ -499,11 +477,7 @@
                 Management
             </div>
 
-            <button
-                class="sidebar-link"
-                data-section="create"
-                onclick="switchSection('create', this)"
-            >
+            <button class="sidebar-link" data-section="create" onclick="switchSection('create', this)">
                 <i class="fa-solid fa-plus"></i>
                 Create Virtual Host
             </button>
@@ -538,10 +512,7 @@
 
         <header class="topbar">
 
-            <button
-                class="btn btn-outline-secondary mobile-menu-button me-3"
-                id="mobileMenuButton"
-            >
+            <button class="btn btn-outline-secondary mobile-menu-button me-3" id="mobileMenuButton">
                 <i class="fa-solid fa-bars"></i>
             </button>
 
@@ -568,34 +539,27 @@
 
             <%if(locals.alert) {%>
 
-                <div
-                    class="alert alert-success alert-dismissible fade show border-0 bg-success bg-opacity-20 mb-4"
-                    role="alert"
-                >
+            <div class="alert alert-success alert-dismissible fade show border-0 bg-success bg-opacity-20 mb-4"
+                role="alert">
 
-                    <i class="fa-solid fa-circle-check me-2"></i>
+                <i class="fa-solid fa-circle-check me-2"></i>
 
-                    <%=alert%>
+                <%=alert%>
 
-                    <script>
-                        function removeAlert() {
-                            window.history.replaceState(
-                                null,
-                                '',
-                                window.location.pathname
-                            );
-                        }
-                    </script>
+                <script>
+                    function removeAlert() {
+                        window.history.replaceState(
+                            null,
+                            '',
+                            window.location.pathname
+                        );
+                    }
+                </script>
 
-                    <button
-                        type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="alert"
-                        aria-label="Close"
-                        onclick="removeAlert()"
-                    ></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"
+                    onclick="removeAlert()"></button>
 
-                </div>
+            </div>
 
             <%}%>
 
@@ -934,7 +898,7 @@
 
 
                 <div
-                    class="card"
+                    class="card p-4"
                     id="VirtualHostsList"
                 >
 
@@ -1597,7 +1561,7 @@
 
                             callbacks: {
 
-                                label: function(context) {
+                                label: function (context) {
 
                                     return `CPU: ${Number(
                                         context.raw
@@ -1627,7 +1591,7 @@
 
                                 color: '#8b949e',
 
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value + '%';
                                 }
 
@@ -1707,7 +1671,7 @@
 
                             callbacks: {
 
-                                label: function(context) {
+                                label: function (context) {
 
                                     return `Memory: ${Number(
                                         context.raw
@@ -1737,7 +1701,7 @@
 
                                 color: '#8b949e',
 
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value + '%';
                                 }
 
@@ -2360,12 +2324,10 @@
     <%-include('include/footer')%>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"
-    ></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+                crossorigin="anonymous"></script>
 
 </body>
