@@ -185,6 +185,9 @@
                     const cpuHistory = []
                     const cpuLabels = []
 
+                    const memoryHistory = []
+                    const memoryLabels = []
+
                     const cpuChart = new Chart(
                         document.getElementById('cpuChart'),
                         {
@@ -262,15 +265,142 @@
                             }
                         }
                     )
+
+                    const memoryChart = new Chart(document.getElementById('memoryChart'),
+                        {
+                            type: 'line',
+
+                            data: {
+                                labels: memoryLabels,
+
+                                datasets: [{
+                                    label: 'Memory Usage',
+
+                                    data: memoryHistory,
+
+                                    borderColor: '#f0ad4e',
+
+                                    backgroundColor: 'rgba(240, 173, 78, 0.10)',
+
+                                    borderWidth: 2,
+
+                                    fill: true,
+
+                                    tension: 0.4,
+
+                                    pointRadius: 2,
+
+                                    pointHoverRadius: 5
+                                }]
+                            },
+
+                            options: {
+                                responsive: true,
+
+                                maintainAspectRatio: false,
+
+                                animation: {
+                                    duration: 300
+                                },
+
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return `Memory: ${context.raw.toFixed(1)}%`
+                                            }
+                                        }
+                                    }
+                                },
+
+                                scales: {
+
+                                    x: {
+                                        display: false
+                                    },
+
+                                    y: {
+                                        min: 0,
+                                        max: 100,
+
+                                        ticks: {
+                                            color: '#8b949e',
+
+                                            callback: function(value) {
+                                                return value + '%'
+                                            }
+                                        },
+
+                                        grid: {
+                                            color: 'rgba(255,255,255,0.05)'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
         
                     function getSystemStat() {
                         fetch('/getUptime').then((res) => {
                             if(res.ok) return res.text()
                         }).then((data) => { uptime.innerHTML = data })
 
-                        fetch('/getMemoryStat').then((res) => {
-                            if(res.ok) return res.text()
-                        }).then((data) => { memStat.innerHTML = data })
+                        fetch('/getMemoryStat')
+                        .then(res => {
+
+                            if (!res.ok) {
+                                throw new Error('Failed to fetch memory')
+                            }
+
+                            return res.json()
+                        })
+                        .then(data => {
+
+                            const memory = Number(data.usagePercent)
+
+                            if (Number.isNaN(memory)) {
+                                throw new Error('Invalid memory value')
+                            }
+
+                            memStat.innerHTML = `${memory.toFixed(1)}%`
+
+                            const usedGB = data.used / 1024 / 1024 / 1024
+
+                            const totalGB = data.total / 1024 / 1024 / 1024
+
+                            memDetail.innerHTML =
+                                `${usedGB.toFixed(1)} GB / ${totalGB.toFixed(1)} GB`
+
+                            memoryHistory.push(memory)
+
+                            if (memoryHistory.length > 15) {
+                                memoryHistory.shift()
+                            }
+
+                            const now = new Date()
+
+                            const time = now.toLocaleTimeString('th-TH', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            })
+
+                            memoryLabels.push(time)
+
+                            if (memoryLabels.length > 15) {
+                                memoryLabels.shift()
+                            }
+
+                            memoryChart.update()
+
+                        })
+                        .catch(err => {
+                            console.error('Memory Error:', err)
+                        })
 
                         fetch('/getCPUusage')
                             .then(res => {
