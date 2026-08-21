@@ -252,39 +252,38 @@
                             if(res.ok) return res.text()
                         }).then((data) => { memStat.innerHTML = data })
 
-                        fetch('/getCPUusage').then((res) => {
-                            if(res.ok) return res.text()
-                        }).then((data) => { 
-                            const cpu = parseFloat(data)
-                            if (Number.isNaN(cpu)) {
-                                throw new Error('Invalid CPU value: ' + data)
-                            }
-                            // แสดงค่าปัจจุบัน
-                            cpuStat.innerHTML = `${cpu.toFixed(1)}%`
-                            // เพิ่มค่าเข้า history
-                            cpuHistory.push(cpu)
-                            // เก็บสูงสุด 15 ค่า
-                            if (cpuHistory.length > 15) {
-                                cpuHistory.shift()
-                            }
-                            // เวลา ณ ตอนที่ได้รับค่า
-                            const now = new Date()
-                            const time = now.toLocaleTimeString('th-TH', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit'
+                        fetch('/getCPUusage')
+                            .then(res => {
+                                if (!res.ok) {
+                                    throw new Error('Failed to fetch CPU')
+                                }
+                                return res.json()
                             })
-                            cpuLabels.push(time)
-                            // ถ้าเกิน 15 label ให้ลบตัวเก่า
-                            if (cpuLabels.length > 15) {
-                                cpuLabels.shift()
-                            }
-                            // Update Chart
-                            cpuChart.update()
-                        })
-                        .catch(err => {
-                            console.error('CPU Error:', err)
-                        })
+                            .then(data => {
+                                const cpu = Number(data.usage)
+                                if (Number.isNaN(cpu)) {
+                                    throw new Error('Invalid CPU value')
+                                }
+                                cpuStat.innerHTML = `${cpu.toFixed(1)}%`
+                                cpuHistory.push(cpu)
+                                if (cpuHistory.length > 15) {
+                                    cpuHistory.shift()
+                                }
+                                const now = new Date()
+                                const time = now.toLocaleTimeString('th-TH', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                })
+                                cpuLabels.push(time)
+                                if (cpuLabels.length > 15) {
+                                    cpuLabels.shift()
+                                }
+                                cpuChart.update()
+                            })
+                            .catch(err => {
+                                console.error('CPU Error:', err)
+                            })
                     }
         
                     getSystemStat()

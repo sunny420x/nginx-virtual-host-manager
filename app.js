@@ -502,7 +502,11 @@ app.get('/getCPUusage', async (req, res) => {
     exec(`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}'`, (err, stdout, stderr) => {
         if (err) console.error(err)
         if (stderr) console.error(stderr)
-        res.send(`<b>CPU Usage:</b> ${stdout}`)
+        const cpu = parseFloat(stdout.trim())
+
+        res.json({
+            usage: cpu
+        })
     })
 })
 
