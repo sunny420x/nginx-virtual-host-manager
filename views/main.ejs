@@ -63,6 +63,10 @@
             border-radius: 8px;
             padding: 1rem;
             height: 100%;
+
+            &.h-max {
+                height: max-content;
+            }
         }
 
         /* Custom Pulse Loader */
@@ -169,14 +173,14 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="stat-card">
+                            <div class="stat-card h-max">
                                 <div class="text-secondary small mb-1"><i class="fa-regular fa-clock me-2 text-success"></i>System Uptime</div>
                                 <div class="fs-5 fw-bold text-white" id="uptime">Loading...</div>
                             </div>
-                            <div class="stat-card">
+                            <div class="stat-card h-max">
                                 <!-- Action Controls -->
-                                <div class="row g-3 mb-4">
-                                    <div class="col-sm-6">
+                                <div class="row g-3">
+                                    <div class="col-12">
                                         <button class="btn btn-primary w-100 py-2 fw-medium" onclick="
                                         fetch('/restart').then((res) => {
                                             if(res.ok) return res.text()
@@ -192,7 +196,7 @@
                                             <i class="fa-solid fa-arrows-rotate me-2"></i> Restart Web Server
                                         </button>
                                     </div>
-                                    <div class="col-sm-6">
+                                    <div class="col-12">
                                         <button class="btn btn-outline-danger w-100 py-2 fw-medium" onclick="if(confirm('Do you want to stop web server ?')) {window.location.href='/stop'}">
                                             <i class="fa-solid fa-power-off me-2"></i> Stop Web Server
                                         </button>
