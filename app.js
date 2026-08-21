@@ -514,7 +514,7 @@ app.get('/restart/node/:name', async (req, res) => {
         if (err) {
             return res.status(500).send(err)
         }
-        return res.status(200).send(`Restarted ${name} !`)
+        return res.status(200).json({message: `Restarted`, subject: name})
     })
 })
 
@@ -526,7 +526,7 @@ app.get('/start/node/:name', async (req, res) => {
         if (err) {
             return res.status(500).send(err)
         }
-        return res.status(200).send(`Started ${name} !`)
+        return res.status(200).json({message: `Started`, subject: name})
     })
 })
 
@@ -538,7 +538,7 @@ app.get('/stop/node/:name', async (req, res) => {
         if (err) {
             return res.status(500).send(err)
         }
-        return res.status(200).send(`Stopped ${name} !`)
+        return res.status(200).json({message: `Stopped`, subject: name})
     })
 })
 
