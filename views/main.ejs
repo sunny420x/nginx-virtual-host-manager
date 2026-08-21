@@ -418,7 +418,7 @@
         function startNodeApp(name) {
             fetch('/start/node/'+name).then(res => {
                 if(!res.ok) throw new Error('Fail to fetch.')
-                return res.text()
+                return res.json()
             }).then(data => {
                 Swal.fire({ ...swalConfig, title: data.message, text: data.subject, icon: 'success' })
                 getNodeApps()
@@ -428,7 +428,7 @@
         function stopNodeApp(name) {
             fetch('/stop/node/'+name).then(res => {
                 if(!res.ok) throw new Error('Fail to fetch.')
-                return res.text()
+                return res.json()
             }).then(data => {
                 Swal.fire({ ...swalConfig, title: data.message, text: data.subject, icon: 'success' })
                 getNodeApps()
@@ -438,7 +438,7 @@
         function restartNodeApp(name) {
             fetch('/restart/node/'+name).then(res => {
                 if(!res.ok) throw new Error('Fail to fetch.')
-                return res.text()
+                return res.json()
             }).then(data => {
                 Swal.fire({ ...swalConfig, title: data.message, text: data.subject, icon: 'success' })
                 getNodeApps()
@@ -448,7 +448,7 @@
         function pm2Save() {
             fetch('/pm2/save').then(res => {
                 if(!res.ok) throw new Error('Fail to fetch.')
-                return res.text()
+                return res.json()
             }).then(data => {
                 Swal.fire({ ...swalConfig, title: data.message, text: data.subject, icon: 'success' })
             }).catch(err => console.log(err))
