@@ -140,17 +140,14 @@
                                         Loading...
                                     </div>
                                 </div>
-
-                                <div style="height: 120px;">
+                                <div style="height: 165px;">
                                     <canvas id="cpuChart"></canvas>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card">
-
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-
                                     <div class="text-secondary small">
                                         <i class="fa-solid fa-memory me-2 text-warning"></i>
                                         Memory Usage
@@ -159,21 +156,17 @@
                                     <div class="fs-6 fw-bold text-white" id="memStat">
                                         Loading...
                                     </div>
-
                                 </div>
-
                                 <div class="small text-secondary mb-2" id="memDetail">
                                     Loading...
                                 </div>
-
-                                <div style="height: 120px;">
+                                <div style="height: 140px;">
                                     <canvas id="memoryChart"></canvas>
                                 </div>
-
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="stat-card h-max">
+                            <div class="stat-card h-max mb-3">
                                 <div class="text-secondary small mb-1"><i class="fa-regular fa-clock me-2 text-success"></i>System Uptime</div>
                                 <div class="fs-5 fw-bold text-white" id="uptime">Loading...</div>
                             </div>
@@ -222,45 +215,30 @@
                         document.getElementById('cpuChart'),
                         {
                             type: 'line',
-
                             data: {
                                 labels: cpuLabels,
-
                                 datasets: [{
                                     label: 'CPU Usage',
-
                                     data: cpuHistory,
-
                                     borderColor: '#58a6ff',
-
                                     backgroundColor: 'rgba(88, 166, 255, 0.10)',
-
                                     borderWidth: 2,
-
                                     fill: true,
-
                                     tension: 0.4,
-
                                     pointRadius: 2,
-
                                     pointHoverRadius: 5
                                 }]
                             },
-
                             options: {
                                 responsive: true,
-
                                 maintainAspectRatio: false,
-
                                 animation: {
                                     duration: 300
                                 },
-
                                 plugins: {
                                     legend: {
                                         display: false
                                     },
-
                                     tooltip: {
                                         callbacks: {
                                             label: function(context) {
@@ -269,24 +247,19 @@
                                         }
                                     }
                                 },
-
                                 scales: {
                                     x: {
                                         display: false
                                     },
-
                                     y: {
                                         min: 0,
                                         max: 100,
-
                                         ticks: {
                                             color: '#8b949e',
-
                                             callback: function(value) {
                                                 return value + '%'
                                             }
                                         },
-
                                         grid: {
                                             color: 'rgba(255,255,255,0.05)'
                                         }
@@ -299,45 +272,30 @@
                     const memoryChart = new Chart(document.getElementById('memoryChart'),
                         {
                             type: 'line',
-
                             data: {
                                 labels: memoryLabels,
-
                                 datasets: [{
                                     label: 'Memory Usage',
-
                                     data: memoryHistory,
-
                                     borderColor: '#f0ad4e',
-
                                     backgroundColor: 'rgba(240, 173, 78, 0.10)',
-
                                     borderWidth: 2,
-
                                     fill: true,
-
                                     tension: 0.4,
-
                                     pointRadius: 2,
-
                                     pointHoverRadius: 5
                                 }]
                             },
-
                             options: {
                                 responsive: true,
-
                                 maintainAspectRatio: false,
-
                                 animation: {
                                     duration: 300
                                 },
-
                                 plugins: {
                                     legend: {
                                         display: false
                                     },
-
                                     tooltip: {
                                         callbacks: {
                                             label: function(context) {
@@ -346,25 +304,20 @@
                                         }
                                     }
                                 },
-
                                 scales: {
-
                                     x: {
                                         display: false
                                     },
-
                                     y: {
                                         min: 0,
                                         max: 100,
 
                                         ticks: {
                                             color: '#8b949e',
-
                                             callback: function(value) {
                                                 return value + '%'
                                             }
                                         },
-
                                         grid: {
                                             color: 'rgba(255,255,255,0.05)'
                                         }
