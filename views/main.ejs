@@ -331,100 +331,60 @@
                         }
                     )
         
-                    function getSystemStat() {
-                        fetch('/getUptime').then((res) => {
-                            if(res.ok) return res.text()
-                        }).then((data) => { uptime.innerHTML = data })
-
-                        fetch('/getMemoryStat')
-                        .then(res => {
-
-                            if (!res.ok) {
-                                throw new Error('Failed to fetch memory')
-                            }
-
-                            return res.json()
-                        })
-                        .then(data => {
-
-                            const memory = Number(data.usagePercent)
-
-                            if (Number.isNaN(memory)) {
-                                throw new Error('Invalid memory value')
-                            }
-
-                            memStat.innerHTML = `${memory.toFixed(1)}%`
-
-                            const usedGB = data.used / 1024 / 1024 / 1024
-
-                            const totalGB = data.total / 1024 / 1024 / 1024
-
-                            memDetail.innerHTML =
-                                `${usedGB.toFixed(1)} GB / ${totalGB.toFixed(1)} GB`
-
-                            memoryHistory.push(memory)
-
-                            if (memoryHistory.length > 15) {
-                                memoryHistory.shift()
-                            }
-
-                            const now = new Date()
-
-                            const time = now.toLocaleTimeString('th-TH', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit'
-                            })
-
-                            memoryLabels.push(time)
-
-                            if (memoryLabels.length > 15) {
-                                memoryLabels.shift()
-                            }
-
-                            memoryChart.update()
-
-                        })
-                        .catch(err => {
-                            console.error('Memory Error:', err)
-                        })
-
-                        fetch('/getCPUusage')
+                    function updateSystemStats() {
+                        fetch('/getSystemStats')
                             .then(res => {
                                 if (!res.ok) {
-                                    throw new Error('Failed to fetch CPU')
+                                    throw new Error('Failed to fetch system stats')
                                 }
                                 return res.json()
                             })
                             .then(data => {
-                                const cpu = Number(data.usage)
-                                if (Number.isNaN(cpu)) {
-                                    throw new Error('Invalid CPU value')
-                                }
-                                cpuStat.innerHTML = `${cpu.toFixed(1)}%`
-                                cpuHistory.push(cpu)
-                                if (cpuHistory.length > 15) {
-                                    cpuHistory.shift()
-                                }
-                                const now = new Date()
-                                const time = now.toLocaleTimeString('th-TH', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    second: '2-digit'
-                                })
-                                cpuLabels.push(time)
-                                if (cpuLabels.length > 15) {
-                                    cpuLabels.shift()
-                                }
-                                cpuChart.update()
+                                const cpu = Number(data.cpu.current)
+                                cpuStat.innerHTML =
+                                    `${cpu.toFixed(1)}%`
+                                cpuChart.data.labels =
+                                    data.labels
+                                cpuChart.data.datasets[0].data =
+                                    data.cpu.history
+                                cpuChart.update('none')
+
+                                const memory =
+                                    Number(data.memory.usagePercent)
+
+                                memStat.innerHTML =
+                                    `${memory.toFixed(1)}%`
+
+                                const usedGB =
+                                    data.memory.used /
+                                    1024 /
+                                    1024 /
+                                    1024
+
+                                const totalGB =
+                                    data.memory.total /
+                                    1024 /
+                                    1024 /
+                                    1024
+
+                                memDetail.innerHTML =
+                                    `${usedGB.toFixed(1)} GB / ${totalGB.toFixed(1)} GB`
+                                memoryChart.data.labels =
+                                    data.labels
+                                memoryChart.data.datasets[0].data =
+                                    data.memory.history
+                                memoryChart.update('none')
                             })
                             .catch(err => {
-                                console.error('CPU Error:', err)
+                                console.error(
+                                    'System Stats Error:',
+                                    err
+                                )
+
                             })
                     }
-        
-                    getSystemStat()
-                    setInterval(getSystemStat, 10000)
+
+                    updateSystemStats()
                 </script>
 
                 <!-- Create Virtual Host Actions -->

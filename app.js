@@ -476,37 +476,148 @@ app.get('/stop', async (req, res) => {
     })
 })
 
-app.get('/getMemoryStat', async (req, res) => {
-    if (!(await checkAdmin(req))) {
-        return res.status(401).send('Please login.')
+const systemHistory = {
+    labels: [],
+    cpu: [],
+    memory: []
+}
+
+setInterval(async () => {
+    try {
+        const cpu = await getCPUUsage()
+        const memory = await getMemoryUsage()
+        addSystemHistory(
+            cpu,
+            memory.usagePercent
+        )
+    } catch (err) {
+        console.error(
+            'System monitoring error:',
+            err.message
+        )
+    }
+}, 10000)
+
+function addSystemHistory(cpu, memory) {
+    const now = new Date()
+
+    const label = now.toLocaleTimeString('th-TH', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    })
+
+    systemHistory.labels.push(label)
+    systemHistory.cpu.push(cpu)
+    systemHistory.memory.push(memory)
+
+    // เก็บสูงสุด 15 ค่า
+    if (systemHistory.labels.length > 15) {
+        systemHistory.labels.shift()
     }
 
-    exec("free -b | awk '/^Mem:/ {print $2, $3, $7}'",
-        (err, stdout, stderr) => {
+    if (systemHistory.cpu.length > 15) {
+        systemHistory.cpu.shift()
+    }
 
-            if (err) {
-                console.error(err)
-                return res.status(500).json({
-                    error: 'Failed to get memory usage'
+    if (systemHistory.memory.length > 15) {
+        systemHistory.memory.shift()
+    }
+}
+
+async function getCPUUsage() {
+    return new Promise((resolve, reject) => {
+        exec(
+            `grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'`,
+            (err, stdout, stderr) => {
+                if (err) {
+                    return reject(err)
+                }
+                const cpu = parseFloat(stdout.trim())
+                if (Number.isNaN(cpu)) {
+                    return reject(
+                        new Error('Invalid CPU value')
+                    )
+                }
+                resolve(cpu)
+            }
+        )
+
+    })
+}
+
+
+async function getMemoryUsage() {
+    return new Promise((resolve, reject) => {
+        exec(
+            "free -b | awk '/^Mem:/ {print $2, $7}'",
+            (err, stdout, stderr) => {
+                if (err) {
+                    return reject(err)
+                }
+                const [total, available] =
+                    stdout.trim()
+                        .split(/\s+/)
+                        .map(Number)
+                if (
+                    Number.isNaN(total) ||
+                    Number.isNaN(available)
+                ) {
+                    return reject(
+                        new Error('Invalid memory value')
+                    )
+                }
+                const used = total - available
+                const usagePercent =
+                    (used / total) * 100
+                resolve({
+                    total,
+                    used,
+                    available,
+                    usagePercent
                 })
             }
+        )
+    })
+}
 
-            if (stderr) {
-                console.error(stderr)
-            }
 
-            const [total, used, available] = stdout.trim().split(/\s+/).map(Number)
+app.get('/getSystemStats', async (req, res) => {
+    if (!(await checkAdmin(req))) {
+        return res.status(401).json({
+            error: 'Please login.'
+        })
+    }
 
-            const usagePercent = (used / total) * 100
+    try {
+        const cpu = await getCPUUsage()
+        const memory = await getMemoryUsage()
+        // เพิ่มข้อมูลเข้า history
+        addSystemHistory(
+            cpu,
+            memory.usagePercent
+        )
+        res.json({
+            cpu: {
+                current: cpu,
+                history: systemHistory.cpu
+            },
+            memory: {
+                total: memory.total,
+                used: memory.used,
+                available: memory.available,
+                usagePercent: memory.usagePercent,
+                history: systemHistory.memory
+            },
+            labels: systemHistory.labels
+        })
 
-            res.json({
-                total,
-                used,
-                available,
-                usagePercent
-            })
-        }
-    )
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({
+            error: 'Failed to get system statistics'
+        })
+    }
 })
 
 app.get('/getUptime', async (req, res) => {
@@ -519,19 +630,6 @@ app.get('/getUptime', async (req, res) => {
     })
 })
 
-app.get('/getCPUusage', async (req, res) => {
-    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
-
-    exec(`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}'`, (err, stdout, stderr) => {
-        if (err) console.error(err)
-        if (stderr) console.error(stderr)
-        const cpu = parseFloat(stdout.trim())
-
-        res.json({
-            usage: cpu
-        })
-    })
-})
 
 app.get('/restart/node/:name', async (req, res) => {
     if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
