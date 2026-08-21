@@ -144,8 +144,28 @@
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card">
-                                <div class="text-secondary small mb-1"><i class="fa-solid fa-memory me-2 text-warning"></i>Memory Usage</div>
-                                <div class="fs-5 fw-bold text-white" id="memStat">Loading...</div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                                    <div class="text-secondary small">
+                                        <i class="fa-solid fa-memory me-2 text-warning"></i>
+                                        Memory Usage
+                                    </div>
+
+                                    <div class="fs-6 fw-bold text-white" id="memStat">
+                                        Loading...
+                                    </div>
+
+                                </div>
+
+                                <div class="small text-secondary mb-2" id="memDetail">
+                                    Loading...
+                                </div>
+
+                                <div style="height: 120px;">
+                                    <canvas id="memoryChart"></canvas>
+                                </div>
+
                             </div>
                         </div>
                         <div class="col-md-4">

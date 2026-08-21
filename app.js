@@ -477,13 +477,36 @@ app.get('/stop', async (req, res) => {
 })
 
 app.get('/getMemoryStat', async (req, res) => {
-    if (!(await checkAdmin(req))) return res.status(401).send('Please login.')
+    if (!(await checkAdmin(req))) {
+        return res.status(401).send('Please login.')
+    }
 
-    exec("free -h | awk '/^Mem:/ {print $7}'", (err, stdout, stderr) => {
-        if (err) console.error(err)
-        if (stderr) console.error(stderr)
-        res.send(`<b>Available Memory:</b> ${stdout}</pre>`)
-    })
+    exec("free -b | awk '/^Mem:/ {print $2, $3, $7}'",
+        (err, stdout, stderr) => {
+
+            if (err) {
+                console.error(err)
+                return res.status(500).json({
+                    error: 'Failed to get memory usage'
+                })
+            }
+
+            if (stderr) {
+                console.error(stderr)
+            }
+
+            const [total, used, available] = stdout.trim().split(/\s+/).map(Number)
+
+            const usagePercent = (used / total) * 100
+
+            res.json({
+                total,
+                used,
+                available,
+                usagePercent
+            })
+        }
+    )
 })
 
 app.get('/getUptime', async (req, res) => {
