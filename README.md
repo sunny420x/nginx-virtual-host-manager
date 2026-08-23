@@ -24,5 +24,5 @@ NGINX_PATH=/etc/nginx/sites-enabled/
 
 # Web Interface Preview
 <img width="1919" height="940" alt="Screenshot 2026-08-08 100059" src="https://github.com/user-attachments/assets/e09e1d86-eec4-4ec3-ae38-b50d4599405e" />
-<img width="1897" height="936" alt="image" src="https://github.com/user-attachments/assets/a3aeded1-7af4-465e-a2b2-358f5966ffc5" />
+<img width="1433" height="716" alt="Screenshot 2569-08-23 at 17 18 49" src="https://github.com/user-attachments/assets/c8a784eb-e1ef-4e16-9ff6-fbf0ca2c567c" />
 <img width="1897" height="938" alt="image" src="https://github.com/user-attachments/assets/3b22e1d3-cbce-442b-af2e-c17a191f817d" />
