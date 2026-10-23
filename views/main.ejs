@@ -11,7 +11,7 @@
             </div>
             <div>
                 <div class="sidebar-brand-title">
-                    Nginx Control
+                    Cloud Manager
                 </div>
                 <div class="sidebar-brand-subtitle">
                     Web Server Management
@@ -59,9 +59,13 @@
                     Server Online
                 </div>
                 <div class="small text-secondary mt-1">
-                    Nginx Control Panel
+                    Control Panel
                 </div>
             </div>
+            <a class="sidebar-link logout-link" href="/logout">
+                <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                Logout
+            </a>
         </div>
     </aside>
     <main class="control-main">
@@ -1014,9 +1018,6 @@
                     console.error(err);
                 });
         }
-        /* =========================================
-           NGINX CONTROLS
-        ========================================== */
         function getSwalConfig() {
             const styles = getComputedStyle(document.documentElement);
             return {

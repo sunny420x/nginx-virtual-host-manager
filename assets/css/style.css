@@ -184,6 +184,7 @@ body {
     border-radius: 7px;
     margin-bottom: 3px;
     font-size: 13px;
+    text-decoration: none;
     transition: background-color 0.15s ease, color 0.15s ease;
     cursor: pointer;
 }
