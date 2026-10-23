@@ -1,3 +1,39 @@
 <footer class="site-footer py-3 my-4">
     <p class="text-center mb-0">© <%=new Date().getFullYear()%> Sunny420x</p>
 </footer>
+<script>
+    (() => {
+        const root = document.documentElement;
+        const toggleButtons = document.querySelectorAll('[data-theme-toggle]');
+
+        function syncThemeToggle() {
+            const isDark = root.dataset.theme === 'dark';
+            toggleButtons.forEach((button) => {
+                const icon = button.querySelector('[data-theme-icon]');
+                const label = button.querySelector('[data-theme-label]');
+                const nextTheme = isDark ? 'light' : 'dark';
+                const action = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+
+                button.setAttribute('aria-label', action);
+                button.setAttribute('title', action);
+                button.setAttribute('aria-pressed', String(isDark));
+                if (icon) {
+                    icon.classList.toggle('fa-moon', !isDark);
+                    icon.classList.toggle('fa-sun', isDark);
+                }
+                if (label) label.textContent = isDark ? 'Light mode' : 'Dark mode';
+
+                button.onclick = () => {
+                    root.dataset.theme = nextTheme;
+                    try {
+                        localStorage.setItem('nvhm-theme', nextTheme);
+                    } catch (error) {}
+                    window.dispatchEvent(new Event('themechange'));
+                    syncThemeToggle();
+                };
+            });
+        }
+
+        syncThemeToggle();
+    })();
+</script>

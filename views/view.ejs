@@ -3,16 +3,23 @@
     <%-include('include/head')%>
 
     <!-- Highlight.js CSS & JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css" integrity="sha512-Jk4AqjWsdSzSWCSuQTfYRIF84Rq/eV0G2+tu07byYwHcbTGfdmLrHjUSwvzp5HvbiqK4ibmNwdcG49Y5RGYPTg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
 </head>
 <body class="editor-page">
 
     <!-- Back Button / Header Navigation -->
-    <div class="top-bar text-white d-flex align-items-center" onclick="history.back()" style="cursor: pointer;">
-        <i class="fa-solid fa-arrow-left me-3 text-secondary"></i>
-        <span class="text-secondary small me-2">Files /</span>
-        <span class="fw-medium text-white"><%=name%></span>
+    <div class="top-bar d-flex align-items-center justify-content-between">
+        <button type="button" class="editor-back-link d-flex align-items-center" onclick="history.back()">
+            <i class="fa-solid fa-arrow-left me-3 text-secondary"></i>
+            <span class="text-secondary small me-2">Files /</span>
+            <span class="fw-medium text-white"><%=name%></span>
+        </button>
+        <button type="button" class="btn btn-theme-toggle" data-theme-toggle>
+            <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
+            <span data-theme-label>Dark mode</span>
+        </button>
     </div>
 
     <!-- Main Container -->

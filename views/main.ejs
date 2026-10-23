@@ -78,6 +78,10 @@
                     Monitor and manage your Nginx server
                 </div>
             </div>
+            <button type="button" class="btn btn-theme-toggle ms-auto" data-theme-toggle>
+                <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
+                <span data-theme-label>Dark mode</span>
+            </button>
         </header>
         <div class="content-wrapper">
             <%if(locals.alert) {%>
@@ -671,6 +675,10 @@
             document.getElementById('memDetail');
         const cpuStat =
             document.getElementById('cpuStat');
+        const chartThemeColor = (name) =>
+            getComputedStyle(document.documentElement)
+                .getPropertyValue(name)
+                .trim();
         /* =========================================
            CPU CHART
         ========================================== */
@@ -683,9 +691,8 @@
                     datasets: [{
                         label: 'CPU Usage',
                         data: [],
-                        borderColor: '#262626',
-                        backgroundColor:
-                            'rgba(38, 38, 38, 0.08)',
+                        borderColor: chartThemeColor('--chart-line'),
+                        backgroundColor: chartThemeColor('--chart-fill'),
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
@@ -719,14 +726,13 @@
                             min: 0,
                             max: 100,
                             ticks: {
-                                color: '#737373',
+                                color: chartThemeColor('--chart-line-muted'),
                                 callback: function (value) {
                                     return value + '%';
                                 }
                             },
                             grid: {
-                                color:
-                                    'rgba(0,0,0,0.07)'
+                                color: chartThemeColor('--chart-grid')
                             }
                         }
                     }
@@ -745,9 +751,8 @@
                     datasets: [{
                         label: 'Memory Usage',
                         data: [],
-                        borderColor: '#737373',
-                        backgroundColor:
-                            'rgba(115, 115, 115, 0.08)',
+                        borderColor: chartThemeColor('--chart-line-muted'),
+                        backgroundColor: chartThemeColor('--chart-fill-muted'),
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
@@ -781,20 +786,32 @@
                             min: 0,
                             max: 100,
                             ticks: {
-                                color: '#737373',
+                                color: chartThemeColor('--chart-line-muted'),
                                 callback: function (value) {
                                     return value + '%';
                                 }
                             },
                             grid: {
-                                color:
-                                    'rgba(0,0,0,0.07)'
+                                color: chartThemeColor('--chart-grid')
                             }
                         }
                     }
                 }
             }
         );
+        function updateChartTheme() {
+            cpuChart.data.datasets[0].borderColor = chartThemeColor('--chart-line');
+            cpuChart.data.datasets[0].backgroundColor = chartThemeColor('--chart-fill');
+            memoryChart.data.datasets[0].borderColor = chartThemeColor('--chart-line-muted');
+            memoryChart.data.datasets[0].backgroundColor = chartThemeColor('--chart-fill-muted');
+
+            [cpuChart, memoryChart].forEach((chart) => {
+                chart.options.scales.y.ticks.color = chartThemeColor('--chart-line-muted');
+                chart.options.scales.y.grid.color = chartThemeColor('--chart-grid');
+                chart.update('none');
+            });
+        }
+        window.addEventListener('themechange', updateChartTheme);
         /* =========================================
            GET SYSTEM STATS
         ========================================== */
@@ -1000,6 +1017,16 @@
         /* =========================================
            NGINX CONTROLS
         ========================================== */
+        function getSwalConfig() {
+            const styles = getComputedStyle(document.documentElement);
+            return {
+                background: styles.getPropertyValue('--surface').trim(),
+                color: styles.getPropertyValue('--text-main').trim(),
+                iconColor: styles.getPropertyValue('--text-heading').trim(),
+                confirmButtonColor: styles.getPropertyValue('--accent').trim(),
+                customClass: { confirmButton: 'theme-swal-confirm' }
+            };
+        }
         function restartNginx() {
             fetch('/restart')
                 .then(res => {
@@ -1012,26 +1039,20 @@
                 })
                 .then(() => {
                     Swal.fire({
+                        ...getSwalConfig(),
                         title:
                             'Nginx is restarting!',
                         text:
                             'Web server restart command has been sent.',
-                        icon: 'success',
-                        background: '#ffffff',
-                        color: '#171717',
-                        iconColor: '#171717',
-                        confirmButtonColor:
-                            '#171717'
+                        icon: 'success'
                     });
                 })
                 .catch(err => {
                     Swal.fire({
+                        ...getSwalConfig(),
                         title: 'Restart Failed',
                         text: err.message,
-                        icon: 'error',
-                        background: '#ffffff',
-                        color: '#171717',
-                        iconColor: '#171717'
+                        icon: 'error'
                     });
                 });
         }
@@ -1048,12 +1069,6 @@
         /* =========================================
            NODE APP CONTROLS
         ========================================== */
-        const swalConfig = {
-            background: '#ffffff',
-            color: '#171717',
-            iconColor: '#171717',
-            confirmButtonColor: '#171717'
-        };
         function startNodeApp(name) {
             fetch('/start/node/' + name)
                 .then(res => {
@@ -1066,7 +1081,7 @@
                 })
                 .then(data => {
                     Swal.fire({
-                        ...swalConfig,
+                        ...getSwalConfig(),
                         title: data.message,
                         text:
                             `${data.subject} has been started.`,
@@ -1090,7 +1105,7 @@
                 })
                 .then(data => {
                     Swal.fire({
-                        ...swalConfig,
+                        ...getSwalConfig(),
                         title: data.message,
                         text:
                             `${data.subject} has been stopped.`,
@@ -1114,7 +1129,7 @@
                 })
                 .then(data => {
                     Swal.fire({
-                        ...swalConfig,
+                        ...getSwalConfig(),
                         title: data.message,
                         text:`${data.subject} has been restarted.`,
                         icon: 'success'
@@ -1137,7 +1152,7 @@
                 })
                 .then(data => {
                     Swal.fire({
-                        ...swalConfig,
+                        ...getSwalConfig(),
                         title: data,
                         icon: 'success'
                     });
