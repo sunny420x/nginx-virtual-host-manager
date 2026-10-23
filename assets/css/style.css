@@ -216,6 +216,10 @@ body {
     border-top: 1px solid var(--border-color);
 }
 
+.logout-link {
+    margin-top: 8px;
+}
+
 .server-status {
     background: var(--surface-subtle);
     border: 1px solid var(--border-color);
