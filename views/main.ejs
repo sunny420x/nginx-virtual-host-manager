@@ -1,6 +1,5 @@
 <head>
     <title>Control Panel | Nginx Virtual Host Management System</title>
-    <link rel="stylesheet" href="/css/style.css">
     <%-include('include/head')%>
 </head>
 <body>
@@ -684,9 +683,9 @@
                     datasets: [{
                         label: 'CPU Usage',
                         data: [],
-                        borderColor: '#58a6ff',
+                        borderColor: '#262626',
                         backgroundColor:
-                            'rgba(88, 166, 255, 0.10)',
+                            'rgba(38, 38, 38, 0.08)',
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
@@ -720,14 +719,14 @@
                             min: 0,
                             max: 100,
                             ticks: {
-                                color: '#8b949e',
+                                color: '#737373',
                                 callback: function (value) {
                                     return value + '%';
                                 }
                             },
                             grid: {
                                 color:
-                                    'rgba(255,255,255,0.05)'
+                                    'rgba(0,0,0,0.07)'
                             }
                         }
                     }
@@ -746,9 +745,9 @@
                     datasets: [{
                         label: 'Memory Usage',
                         data: [],
-                        borderColor: '#f0ad4e',
+                        borderColor: '#737373',
                         backgroundColor:
-                            'rgba(240, 173, 78, 0.10)',
+                            'rgba(115, 115, 115, 0.08)',
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
@@ -782,14 +781,14 @@
                             min: 0,
                             max: 100,
                             ticks: {
-                                color: '#8b949e',
+                                color: '#737373',
                                 callback: function (value) {
                                     return value + '%';
                                 }
                             },
                             grid: {
                                 color:
-                                    'rgba(255,255,255,0.05)'
+                                    'rgba(0,0,0,0.07)'
                             }
                         }
                     }
@@ -1018,10 +1017,11 @@
                         text:
                             'Web server restart command has been sent.',
                         icon: 'success',
-                        background: '#161b22',
-                        color: '#fff',
+                        background: '#ffffff',
+                        color: '#171717',
+                        iconColor: '#171717',
                         confirmButtonColor:
-                            '#238636'
+                            '#171717'
                     });
                 })
                 .catch(err => {
@@ -1029,8 +1029,9 @@
                         title: 'Restart Failed',
                         text: err.message,
                         icon: 'error',
-                        background: '#161b22',
-                        color: '#fff'
+                        background: '#ffffff',
+                        color: '#171717',
+                        iconColor: '#171717'
                     });
                 });
         }
@@ -1048,9 +1049,10 @@
            NODE APP CONTROLS
         ========================================== */
         const swalConfig = {
-            background: '#161b22',
-            color: '#fff',
-            confirmButtonColor: '#238636'
+            background: '#ffffff',
+            color: '#171717',
+            iconColor: '#171717',
+            confirmButtonColor: '#171717'
         };
         function startNodeApp(name) {
             fetch('/start/node/' + name)

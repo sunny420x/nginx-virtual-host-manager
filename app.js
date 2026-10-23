@@ -679,5 +679,5 @@ app.get('/pm2/save', async (req, res) => {
 })
 
 app.listen(process.env.PORT, () => {
-    console.log('[+] NVHM is started on ' + process.env.PORT)
+    console.log('[+] NVHM is started on http://localhost:' + process.env.PORT)
 })
